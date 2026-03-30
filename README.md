@@ -5,7 +5,7 @@
 <!-- START -->
 
 ```text
-.
+Lyfter-Practice-Exercises
 ├── databases
 │   ├── 001_create_initial_tables.sql
 │   ├── 002_ALTER.sql
