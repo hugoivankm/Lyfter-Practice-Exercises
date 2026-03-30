@@ -19,15 +19,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y tree
-    
-      - name: Generate File Tree
-        run: |
-          echo '```text' > tree_output.txt
-          tree -I '.git|node_modules|.github|.scripts' >> tree_output.txt
-          echo '```' >> tree_output.txt
-          echo "FILE_TREE<<DELIMITER" >> $GITHUB_ENV
-          cat tree_output.txt >> $GITHUB_ENV
-          echo "DELIMITER" >> $GITHUB_ENV
       
       - name: Generate and Capture Tree
         run: |
