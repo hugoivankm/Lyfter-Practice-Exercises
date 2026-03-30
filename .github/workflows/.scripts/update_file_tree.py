@@ -11,7 +11,7 @@ def update_readme():
     start_marker = "<!-- START -->"
     end_marker = "<!-- END -->"
 
-    if not os.path.exits('README.md')
+    if not os.path.exits('README.md'):
         print("README.md not found!")
         sys.exit(1)
     
