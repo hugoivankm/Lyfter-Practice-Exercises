@@ -6,7 +6,6 @@
 
 ```text
 .
-├── README.md
 ├── databases
 │   ├── 001_create_initial_tables.sql
 │   ├── 002_ALTER.sql
@@ -14,9 +13,7 @@
 │   ├── 004_SELECT.sql
 │   ├── limitante.md
 │   └── store.db
-└── tree_output.txt
-
-2 directories, 8 files
+└── README.md
 ```
 
 <!-- END -->
