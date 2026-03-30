@@ -1,0 +1,40 @@
+name: Update Directory Structure in README
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code  
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - name: Install Tree Utility
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tree
+    
+      - name: Generate File Tree
+        run: |
+          echo "FILE_TREE<<EOF" >> $GITHUB_ENV
+          echo '```text' >> $GITHUB_ENV
+          tree -F --distfirst -I '.git|.github|.scripts' >> $GITHUB_ENV
+          echo '```' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Run Helper Scripts
+        env:
+          FILE_TREE: ${{ env.FILE_TREE }}
+        run: python3 .scripts/update_file_tree.py
+
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[skip ci] README: update directory structure"
+
+        
