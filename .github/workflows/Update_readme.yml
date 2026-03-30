@@ -25,7 +25,9 @@ jobs:
           REPO_NAME=${{ github.event.repository.name }}
           
           echo '```text' > tree_output.txt
-          tree -I '.git|node_modules|.github|.scripts|tree_output.txt' --noreport --dirsfirst . >> tree_output.txt
+          echo "$REPO_NAME" >> tree_output.txt
+
+          tree -I '.git|node_modules|.github|.scripts|tree_output.txt' --noreport --dirsfirst . | tail -n +2 >> tree_output.txt
           
           # Replace the first line in the tree "." with the Repo Name
           sed -i "1s/^\./$REPO_NAME/" tree_output.txt
