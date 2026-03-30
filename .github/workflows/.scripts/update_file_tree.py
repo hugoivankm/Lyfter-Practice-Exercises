@@ -2,7 +2,7 @@ import os
 import sys
 
 def update_readme():
-    new_tree = os.environ.get('FILE_TREE', '')
+    new_tree = os.environ.get('FILE_TREE', '').strip()
 
     if not new_tree:
         print("Error: No FILE_TREE data found.")

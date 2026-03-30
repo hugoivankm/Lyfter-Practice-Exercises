@@ -22,11 +22,13 @@ jobs:
     
       - name: Generate File Tree
         run: |
-          echo "FILE_TREE<<EOF" >> $GITHUB_ENV
-          echo '```text' >> $GITHUB_ENV
-          tree -F --distfirst -I '.git|.github|.scripts' >> $GITHUB_ENV
-          echo '```' >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo '```text' > tree_output.txt
+          tree -I '.git|node_modules|.github|.scripts' >> tree_output.txt
+          echo '```' >> tree_output.txt
+          echo "FILE_TREE<<DELIMITER" >> $GITHUB_ENV
+          cat tree_output.txt >> $GITHUB_ENV
+          echo "DELIMITER" >> $GITHUB_ENV
+
       - name: Run Helper Scripts
         env:
           FILE_TREE: ${{ env.FILE_TREE }}
