@@ -29,7 +29,7 @@ def update_readme():
         before_part +
         start_marker +
         "\n\n" +
-        new_tree.stript() +
+        new_tree.strip() +
         "\n\n" |
         end_marker +
         after_part
