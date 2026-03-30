@@ -1,9 +1,3 @@
-# Ejercicios_Lyfter
-
-
-## Structure
-<!-- START -->
-
 ```text
 .
 ├── README.md
@@ -18,5 +12,3 @@
 
 2 directories, 8 files
 ```
-
-<!-- END -->
