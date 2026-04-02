@@ -7,6 +7,9 @@
 ```text
 Lyfter-Practice-Exercises
 ├── databases
+│   ├── nomalization
+│   │   ├── 1-Normal-Forms.md
+│   │   └── 2-Normal-forms.md
 │   └── queries
 │       ├── 001_create_initial_tables.sql
 │       ├── 002_ALTER.sql
