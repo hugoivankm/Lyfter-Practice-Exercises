@@ -12,6 +12,7 @@ The tables start in first normal form (`1NF`).
 | 003 | Claire | 555-123-4567 | 789 Oak St | 105 | Salad | $6 | 1 | No croutons | 12:00 PM |
 | 004 | Claire | 555-123-4567 | 464 Georgia St | 106 | Water | $1 | 1 | None | 5:00 PM |
 
+
 ***
 No single column identifies, the primary key, there are several partial dependencies violating 2NF,
 therefore we can start by splitting in a somewhat natural way, Orders and Customers are two separate concepts
