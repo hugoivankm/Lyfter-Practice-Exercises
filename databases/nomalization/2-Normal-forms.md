@@ -7,6 +7,7 @@
 | 003 | Claire | 555-123-4567 |
 
 
+
 ### Addresses ###
 | Id | Address | Customers_ID |
 | :--- | :--- | :--- | 
