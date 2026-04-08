@@ -1,0 +1,30 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE Books (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    Author TEXT,
+);
+
+
+CREATE TABLE Authors (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+);
+
+CREATE TABLE Customers (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT
+);
+
+
+CREATE TABLE Rents (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    State TEXT,
+    Book_ID INTEGER,
+    Customer_ID INTEGER,
+    FOREIGN KEY (Customer_ID) REFERENCES Customers (ID),
+    FOREIGN KEY (Book_ID) REFERENCES Book
+);
+
