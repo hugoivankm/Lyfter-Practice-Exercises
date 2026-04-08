@@ -2,9 +2,9 @@
 | ID | Name | Author |
 | :--- | :--- | :--- |
 | 1 | Don Quijote | 1 |
-| 12 | La Divina Comedia | 2 |
-| 23 | Vagabond 1-3 | 3 |
-| 34 | Dragon Ball 1 | 4 |
+| 2 | La Divina Comedia | 2 |
+| 3 | Vagabond 1-3 | 3 |
+| 4 | Dragon Ball 1 | 4 |
 | 5 | The Book of the 5 Rings | NULL |
 
 ### Authors
