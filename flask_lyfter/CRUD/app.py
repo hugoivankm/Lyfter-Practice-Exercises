@@ -1,9 +1,8 @@
 from flask import Flask, jsonify, request, Response
-from typing import Any, cast
-from tasks import TaskManager, Task, Status
+from tasks import TasksManager
 
 app: Flask = Flask(__name__)
-data_manager: TaskManager = TaskManager()
+data_manager: TasksManager = TasksManager()
 
 
 @app.route("/tasks", methods=["GET"])
@@ -11,7 +10,8 @@ def list_tasks():
     try:
         status_filter = request.args.get("status")
         filtered_tasks = data_manager.filter_by_status(status_filter)
-        return jsonify(filtered_tasks, 200)
+
+        return jsonify(filtered_tasks)
     except Exception:
         return jsonify(
             message="Oops something went wrong while listing your tasks"
@@ -26,15 +26,15 @@ def create_task():
 
         data = request.get_json(silent=True)
         if not data:
-            return {"message": "No JSON data received"}, 400
+            return jsonify({"message": "No JSON data received"}), 400
 
         new_task = data_manager.add_task(data)
         if new_task is None:
             return jsonify(
-                {"error": "Tasks must have a non empty title and description"}
+                {"error": "Tasks must have a non-empty title and description"}
             ), 400
 
-        return jsonify(new_task.to_dict())
+        return jsonify(new_task.to_dict()), 201
     except Exception:
         return jsonify(
             message="Oops something went wrong while creating your tasks"
@@ -44,19 +44,17 @@ def create_task():
 @app.route("/tasks/<int:id>", methods=["PATCH"])
 def edit_task(id: int):
     try:
-        if data_manager.is_empty():
-            return {"error": "No task to change"}, 404
         if not request.is_json:
-            return {"error": "Invalid or missing MIME type"}, 400
+            return jsonify({"error": "Invalid or missing MIME type"}), 400
 
-        data: dict = request.get_json(silent=True)
+        data = request.get_json(silent=True)
         if not data:
-            return {"message": "No JSON data received"}, 400
+            return jsonify({"message": "No JSON data received"}), 400
 
-        updated_task: Task = data_manager.edit(id, data)
+        updated_task = data_manager.edit(id, data)
 
-        if not updated_task:
-            return {"message": "Malformed JSON values"}, 400
+        if updated_task is None:
+            return jsonify({"message": "Task not found or invalid data"}), 404
 
         return jsonify(updated_task.to_dict())
     except Exception:
@@ -70,7 +68,7 @@ def delete_task(id: int):
     try:
         result: bool = data_manager.delete(id)
         if not result:
-            return {"error": "Task not found"}, 404
+            return jsonify({"error": "Task not found"}), 404
         return Response(status=204)
 
     except Exception:
@@ -80,4 +78,4 @@ def delete_task(id: int):
 
 
 if __name__ == "__main__":
-    app.run(host="localhost", debug=True)
+    app.run(host="localhost", port=5000, debug=True)

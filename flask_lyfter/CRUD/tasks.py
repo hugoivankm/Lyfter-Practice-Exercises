@@ -1,15 +1,14 @@
+import json
+import os
 from enum import StrEnum, auto
 from typing import Any, Generator
 
 
 class Status(StrEnum):
-    """
-    Valid statuses for a task.
-    """
-
     PENDING = auto()
     IN_PROGRESS = auto()
     COMPLETED = auto()
+
 
 class Task:
     def __init__(
@@ -43,10 +42,45 @@ class Task:
         return dict(self)
 
 
-class TaskManager:
-    def __init__(self):
+class TasksManager:
+    def __init__(self, storage_file: str = "tasks.json"):
         self.tasks: dict[int, Task] = {}
         self.current_id = 1
+        self.storage_file = storage_file
+        self._ensure_storage_exists()
+        self._load_from_disk()
+
+    def _ensure_storage_exists(self):
+        if not os.path.exists(self.storage_file):
+            with open(self.storage_file, "w") as f:
+                json.dump({}, f)
+
+    def _load_from_disk(self):
+        try:
+            with open(self.storage_file, "r") as f:
+                content = f.read().strip()
+                if not content:
+                    return
+
+                data = json.loads(content)
+                for t_id, t_data in data.items():
+                    id: int = int(t_id)
+                    self.tasks[id] = Task(
+                        id=id,
+                        title=t_data["title"],
+                        description=t_data["description"],
+                        status=Status(t_data["status"]),
+                    )
+
+                    if id >= self.current_id:
+                        self.current_id = id + 1
+        except Exception:
+            print(f"Warning: Could not parse {self.storage_file}. Starting new file")
+
+    def commit(self):
+        data_dict = {str(k): v.to_dict() for k, v in self.tasks.items()}
+        with open(self.storage_file, "w") as f:
+            json.dump(data_dict, f, indent=4)
 
     def save(self, task: Task):
         self.tasks[self.current_id] = task
@@ -54,9 +88,10 @@ class TaskManager:
     def delete(self, id: int) -> bool:
         if id in self.tasks:
             del self.tasks[id]
+            self.commit()
             return True
         return False
-    
+
     def is_empty(self) -> bool:
         return len(self.tasks) == 0
 
@@ -66,8 +101,7 @@ class TaskManager:
     def get_by_id(self, id: int):
         return self.tasks.get(id)
 
-
-    def add_task(self, task_data: dict[str, Any]) ->  dict[str, Any] | None:
+    def add_task(self, task_data: dict[str, Any]) -> dict[str, Any] | None:
         if "title" not in task_data or "description" not in task_data:
             return None
 
@@ -86,10 +120,11 @@ class TaskManager:
 
         self.save(new_task)
         self.current_id += 1
-        
+
+        self.commit()
         return new_task
-    
-    def edit(self, id: int, task_data: dict[str, Any]) ->  dict[str, Any] | None:
+
+    def edit(self, id: int, task_data: dict[str, Any]) -> dict[str, Any] | None:
 
         original_task: Task | None = self.get_by_id(id)
         if not original_task:
@@ -99,7 +134,7 @@ class TaskManager:
             id=original_task.id,
             title=original_task.title,
             description=original_task.description,
-            status=original_task.status
+            status=original_task.status,
         )
         try:
             if "title" in task_data:
@@ -117,28 +152,27 @@ class TaskManager:
             if "status" in task_data:
                 candidate.status = Status(task_data["status"].lower())
 
-        except(ValueError, KeyError, AttributeError):
+        except (ValueError, KeyError, AttributeError):
             return None
 
         self.tasks[id] = candidate
+
+        self.commit()
         return candidate
-    
-    def filter_by_status(self, status_filter: str | None = None) -> dict[int, dict[str, Any]]:
-        
-        all_tasks = {t_id: t.to_dict() for t_id, t in self.tasks.items()}
-        
+
+    def filter_by_status(
+        self, status_filter: str | None = None
+    ) -> dict[int, dict[str, Any]]:
         if not status_filter:
-            return all_tasks
-        
+            return {t_id: t.to_dict() for t_id, t in self.tasks.items()}
+
         try:
             target_status = Status(status_filter.lower())
             return {
-                t_id: t_dict
-                for t_id, t_dict in all_tasks.items()
-                if t_dict["status"] == target_status
+                t_id: t.to_dict()
+                for t_id, t in self.tasks.items()
+                if t.status == target_status
             }
 
         except ValueError:
-            return {} 
-
-
+            return {}
