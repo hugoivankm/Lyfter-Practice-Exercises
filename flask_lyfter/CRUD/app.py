@@ -1,23 +1,17 @@
-from flask import Flask, jsonify, request
-
+from flask import Flask, jsonify, request, Response
+from typing import Any, cast
 from tasks import TaskManager, Task, Status
 
-app = Flask(__name__)
-data_source = TaskManager()
+app: Flask = Flask(__name__)
+data_manager: TaskManager = TaskManager()
 
 
 @app.route("/tasks", methods=["GET"])
 def list_tasks():
     try:
-        status_filter: Status | None = request.args.get("status_filter")
-        filtered_data_source = data_source.get_all()
-        if status_filter is not None:
-            filtered_data_source = {
-                k: v
-                for k, v in filtered_data_source.items()
-                if v.status == status_filter
-            }
-        return jsonify(filtered_data_source)
+        status_filter = request.args.get("status")
+        filtered_tasks = data_manager.filter_by_status(status_filter)
+        return jsonify(filtered_tasks, 200)
     except Exception:
         return jsonify(
             message="Oops something went wrong while listing your tasks"
@@ -34,7 +28,7 @@ def create_task():
         if not data:
             return {"message": "No JSON data received"}, 400
 
-        new_task = data_source.add_task(data)
+        new_task = data_manager.add_task(data)
         if new_task is None:
             return jsonify(
                 {"error": "Tasks must have a non empty title and description"}
@@ -50,17 +44,19 @@ def create_task():
 @app.route("/tasks/<int:id>", methods=["PATCH"])
 def edit_task(id: int):
     try:
+        if data_manager.is_empty():
+            return {"error": "No task to change"}, 404
         if not request.is_json:
-            return jsonify({"error": "Invalid or missing MIME type"}), 400
+            return {"error": "Invalid or missing MIME type"}, 400
 
         data: dict = request.get_json(silent=True)
         if not data:
             return {"message": "No JSON data received"}, 400
-        
-        updated_task: Task = data_source.edit(id, data)
+
+        updated_task: Task = data_manager.edit(id, data)
 
         if not updated_task:
-            return {"message": "Malformed JSON values"}, 400 
+            return {"message": "Malformed JSON values"}, 400
 
         return jsonify(updated_task.to_dict())
     except Exception:
@@ -71,7 +67,16 @@ def edit_task(id: int):
 
 @app.route("/tasks/<int:id>", methods=["DELETE"])
 def delete_task(id: int):
-    return jsonify({"error": "NOT IMPLEMETED"})
+    try:
+        result: bool = data_manager.delete(id)
+        if not result:
+            return {"error": "Task not found"}, 404
+        return Response(status=204)
+
+    except Exception:
+        return jsonify(
+            message="Oops something went wrong while deleting your tasks"
+        ), 500
 
 
 if __name__ == "__main__":

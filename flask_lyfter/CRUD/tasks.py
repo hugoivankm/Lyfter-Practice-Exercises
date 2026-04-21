@@ -11,7 +11,6 @@ class Status(StrEnum):
     IN_PROGRESS = auto()
     COMPLETED = auto()
 
-
 class Task:
     def __init__(
         self,
@@ -31,17 +30,17 @@ class Task:
         yield "description", self.description
         yield "status", self.status
 
-    def to_dict(self) -> dict[str, Any]:
-        """
-        Converts the task to a dictionary.
-        """
-        return dict(self)
-
     def __str__(self):
         return f" id: {self.id}, title: {self.title}, description: {self.description}, status: {self.status}"
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts the task to a dictionary.
+        """
+        return dict(self)
 
 
 class TaskManager:
@@ -51,57 +50,95 @@ class TaskManager:
 
     def save(self, task: Task):
         self.tasks[self.current_id] = task
-        self.current_id += 1
 
     def delete(self, id: int) -> bool:
         if id in self.tasks:
             del self.tasks[id]
             return True
         return False
+    
+    def is_empty(self) -> bool:
+        return len(self.tasks) == 0
 
-    def add_task(self, task_data: dict[str, Any] | None) -> Task:
-        if "title" not in task_data or "description" not in task_data:
-            return None
-
-        title = task_data.get("title")
-        description = task_data.get("description")
-
-        if not title.strip() or not description.strip():
-            return None
-
-        new_task = Task(self.current_id, title, description, Status.PENDING)
-        self.save(new_task)
-        return new_task
-
-    def get_all(self) -> list[dict]:
+    def get_all(self) -> list[dict[str, str]]:
         return [task.to_dict() for task in self.tasks.values()]
 
     def get_by_id(self, id: int):
         return self.tasks.get(id)
 
-    def edit(self, id: int, task_data: dict) -> Task | None:
-        original_task: Task = self.get_by_id(id)
+
+    def add_task(self, task_data: dict[str, Any]) ->  dict[str, Any] | None:
+        if "title" not in task_data or "description" not in task_data:
+            return None
+
+        title: str | None = task_data.get("title")
+        if not title:
+            return None
+
+        description = task_data.get("description")
+        if not description:
+            return None
+
+        if not title.strip() or not description.strip():
+            return None
+
+        new_task = Task(self.current_id, title, description, Status.PENDING)
+
+        self.save(new_task)
+        self.current_id += 1
+        
+        return new_task
+    
+    def edit(self, id: int, task_data: dict[str, Any]) ->  dict[str, Any] | None:
+
+        original_task: Task | None = self.get_by_id(id)
         if not original_task:
             return None
 
-        candidate = copy.deepcopy(original_task)
+        candidate = Task(
+            id=original_task.id,
+            title=original_task.title,
+            description=original_task.description,
+            status=original_task.status
+        )
+        try:
+            if "title" in task_data:
+                title: str = task_data["title"]
+                if not title.strip():
+                    return None
+                candidate.title = title
 
-        if "title" in task_data:
-            if not task_data["title"].strip():
-                return None
-            candidate.title = task_data["title"]
-        if "description" in task_data:
-            if not task_data["description"].strip():
-                return None
-            candidate.description = task_data["description"]
-        if "status" in task_data:
-            status: str = task_data.get("status", "").lower()
-            try:
-                candidate.status = Status(status)
-            except ValueError:
-                return None
-        
-        self.delete(original_task.id)
-        self.save(candidate)
+            if "description" in task_data:
+                description = task_data["description"]
+                if not description.strip():
+                    return None
+                candidate.description = description
 
+            if "status" in task_data:
+                candidate.status = Status(task_data["status"].lower())
+
+        except(ValueError, KeyError, AttributeError):
+            return None
+
+        self.tasks[id] = candidate
         return candidate
+    
+    def filter_by_status(self, status_filter: str | None = None) -> dict[int, dict[str, Any]]:
+        
+        all_tasks = {t_id: t.to_dict() for t_id, t in self.tasks.items()}
+        
+        if not status_filter:
+            return all_tasks
+        
+        try:
+            target_status = Status(status_filter.lower())
+            return {
+                t_id: t_dict
+                for t_id, t_dict in all_tasks.items()
+                if t_dict["status"] == target_status
+            }
+
+        except ValueError:
+            return {} 
+
+
