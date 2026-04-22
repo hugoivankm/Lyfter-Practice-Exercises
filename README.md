@@ -30,6 +30,13 @@ Lyfter-Practice-Exercises
 │       ├── 002_INSERT_DATA.sql
 │       ├── 003_PURCHASE_TRASACTION.sql
 │       └── 004_PRODUCT_RETURN_TRANSACTION.sql
+├── flask_lyfter
+│   └── CRUD
+│       ├── app.py
+│       ├── pyproject.toml
+│       ├── tasks.json
+│       ├── tasks.py
+│       └── uv.lock
 └── README.md
 ```
 
