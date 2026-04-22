@@ -101,7 +101,7 @@ class TasksManager:
     def get_by_id(self, id: int):
         return self.tasks.get(id)
 
-    def add_task(self, task_data: dict[str, Any]) -> dict[str, Any] | None:
+    def add_task(self, task_data: dict[str, Any]) -> Task | None:
         if "title" not in task_data or "description" not in task_data:
             return None
 
@@ -125,7 +125,6 @@ class TasksManager:
         return new_task
 
     def edit(self, id: int, task_data: dict[str, Any]) -> dict[str, Any] | None:
-
         original_task: Task | None = self.get_by_id(id)
         if not original_task:
             return None
@@ -162,17 +161,14 @@ class TasksManager:
 
     def filter_by_status(
         self, status_filter: str | None = None
-    ) -> dict[int, dict[str, Any]]:
+    ) -> list[Task] | None:
+        
         if not status_filter:
-            return {t_id: t.to_dict() for t_id, t in self.tasks.items()}
-
+            return list(self.tasks.values())
+        
         try:
             target_status = Status(status_filter.lower())
-            return {
-                t_id: t.to_dict()
-                for t_id, t in self.tasks.items()
-                if t.status == target_status
-            }
-
+            return [t for t in self.tasks.values() if t.status == target_status]
+        
         except ValueError:
-            return {}
+            return None
