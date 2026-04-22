@@ -2,6 +2,7 @@ import json
 import os
 from enum import StrEnum, auto
 from typing import Any, Generator
+from flask import jsonify
 
 
 class Status(StrEnum):
@@ -172,3 +173,18 @@ class TasksManager:
         
         except ValueError:
             return None
+
+    def error_response(message, status_code):
+        return jsonify({"error": message}), status_code
+    
+
+class ResponseManager:
+    @staticmethod
+    def error(message: str, status_code: int):
+        return jsonify({"error": message}), status_code
+
+    @staticmethod
+    def success(data, status_code: int = 200):
+        if isinstance(data, list):
+            return jsonify([t.to_dict() for t in data]), status_code
+        return jsonify(data.to_dict()), status_code
