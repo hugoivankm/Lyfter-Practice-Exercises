@@ -1,0 +1,12 @@
+# uv environment
+.venv/
+
+# uv build artifacts
+dist/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Ruff cache
+.ruff_cache/
