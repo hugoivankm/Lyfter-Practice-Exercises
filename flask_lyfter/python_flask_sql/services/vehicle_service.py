@@ -12,7 +12,7 @@ from ..api.errors.vehicle_errors import (
     VehicleUpdateError,
 )
 
-from flask_lyfter.python_flask_sql.api.errors.database_errors import DbRetrievalError
+from ..api.errors.database_errors import DbRetrievalError
 
 
 class VehicleService(BaseService):
@@ -32,24 +32,24 @@ class VehicleService(BaseService):
 
         return new_vehicle.to_dict()
 
-    def get(self, vehicle_id: int) -> dict[str, Any]:
+    def get(self, id: int) -> dict[str, Any]:
         try:
-            vehicle = self.vehicle_repo.get_by_id(vehicle_id)
+            vehicle = self.vehicle_repo.get_by_id(id)
             if vehicle is None:
                 raise VehicleDoesNotExistsError(
-                    f"Vehicle with id: {vehicle_id} does not exist in database"
+                    f"Vehicle with id: {id} does not exist in database"
                 )
             return vehicle.to_dict()
         except Exception as e:
             print(f"get vehicle error: {e}")
             raise DbRetrievalError("unable to retrieve Vehicle ")
 
-    def delete(self, vehicle_id: int):
+    def delete(self, id: int):
         try:
-            deleted_vehicle = self.vehicle_repo.delete(vehicle_id)
+            deleted_vehicle = self.vehicle_repo.delete(id)
             if deleted_vehicle is None:
                 raise VehicleDoesNotExistsError(
-                    f" Vehicle with id: {vehicle_id} does not exist and cannot be deleted"
+                    f" Vehicle with id: {id} does not exist and cannot be deleted"
                 )
             return deleted_vehicle.to_dict()
         except psycopg2.IntegrityError:
@@ -61,10 +61,10 @@ class VehicleService(BaseService):
         except psycopg2.Error as e:
             print(f"Delete vehicle error: {e}")
             raise DbRetrievalError(
-                f"Internal database error during deletion of vehicle {vehicle_id}"
+                f"Internal database error during deletion of vehicle {id}"
             )
 
-    def update_status(self, vehicle_id: int, new_status: str):
+    def update_status(self, id: int, new_status: VehicleStatus):
         try:
             vehicle_status = None
             try:
@@ -72,14 +72,14 @@ class VehicleService(BaseService):
             except ValueError:
                 raise VehicleUpdateError(f"Invalid status: {new_status}")
 
-            db_vehicle_status = self.vehicle_repo.get_by_id(vehicle_id)
+            db_vehicle_status = self.vehicle_repo.get_by_id(id)
             if not db_vehicle_status:
                 raise VehicleDoesNotExistsError(
-                    f"User with id: {vehicle_id} does not exist and cannot be updated"
+                    f"User with id: {id} does not exist and cannot be updated"
                 )
 
             updated_vehicle = self.vehicle_repo.update_status(
-                vehicle_id, vehicle_status
+                id, vehicle_status
             )
 
             if not updated_vehicle:

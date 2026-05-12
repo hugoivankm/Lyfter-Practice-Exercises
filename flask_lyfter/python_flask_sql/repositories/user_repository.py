@@ -3,8 +3,9 @@ from datetime import date
 from ..models.user import User, AccountStatus
 from typing import Optional
 
+from .repository import BaseRepository
 
-class UserRepository:
+class UserRepository(BaseRepository):
     def __init__(self, db_conn: _connection):
         self.db = db_conn
 
@@ -30,7 +31,7 @@ class UserRepository:
             row = cur.fetchone()
             return User.from_row(row)
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, id: int) -> Optional[User]:
         self.db.rollback()
 
         query = """
@@ -40,11 +41,11 @@ class UserRepository:
         """
 
         with self.db.cursor() as cur:
-            cur.execute(query, (user_id,))
+            cur.execute(query, (id,))
             row = cur.fetchone()
             return User.from_row(row)
 
-    def delete(self, user_id: int) -> User | None:
+    def delete(self, id: int) -> User | None:
         with self.db.cursor() as cur:
             query: str = """
             DELETE FROM lyfter_car_rental.users
@@ -52,11 +53,11 @@ class UserRepository:
             RETURNING *
             """
 
-            cur.execute(query, (user_id,))
+            cur.execute(query, (id,))
             row = cur.fetchone()
             return User.from_row(row)
 
-    def update_status(self, user_id: int, status: AccountStatus) -> User | None:
+    def update_status(self, id: int, status: AccountStatus) -> User | None:
         with self.db.cursor() as cur:
             if status not in AccountStatus:
                 return None
@@ -66,6 +67,6 @@ class UserRepository:
             WHERE id = %s
             RETURNING *
             """
-            cur.execute(query, (status.value, user_id))
+            cur.execute(query, (status.value, id))
             row = cur.fetchone()
             return User.from_row(row)

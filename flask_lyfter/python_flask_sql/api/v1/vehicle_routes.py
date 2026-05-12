@@ -2,19 +2,19 @@ import psycopg2
 from http import HTTPStatus
 from flask import Blueprint, g, request
 
-from .utils import validate_json
-from ...services.vehicle_service import (
-    VehicleService,
-    VehicleDoesNotExistsError,
-    DbRetrievalError,
-    VehicleUpdateError,
-)
+from .utils import validate_json, update_status_and_respond
+
+from ...services.vehicle_service import VehicleService
 
 from ..errors.json_errors import (
     MalformedJSONError,
     EmptyJSONError,
     MissingParametersJSONError,
 )
+
+from ..errors.vehicle_errors import VehicleDoesNotExistsError
+
+from ..errors.database_errors import DbRetrievalError
 
 from .responses import json_response, error_response
 
@@ -64,74 +64,25 @@ def get_vehicle(vehicle_id: int):
 # PATCH api/v1/vehicles/<id>
 @vehicle_bp.route("/<int:vehicle_id>", methods=["PATCH"])
 def update_vehicle_status(vehicle_id: int):
-    
     try:
         data = validate_json(request, ["vehicle_status"])
 
-        new_status = data["vehicle_status"]
-
-        service = VehicleService(g.db)
-        service.update_status(vehicle_id, new_status)
-
-        return json_response(new_status, HTTPStatus.OK)
-    
-    except MalformedJSONError:
-        return error_response("Malformed JSON body", HTTPStatus.BAD_REQUEST)
-    except EmptyJSONError:
-        return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
-    except MissingParametersJSONError as e:
-        return error_response(str(e), HTTPStatus.BAD_REQUEST)
-    except VehicleDoesNotExistsError as e:
-        return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
-    except VehicleUpdateError as e:
-        return error_response(str(e), HTTPStatus.NOT_FOUND)
-    except psycopg2.errors.CheckViolation:
-        return error_response("Invalid vehicle status", HTTPStatus.BAD_REQUEST)
-    except Exception:
-        return error_response(
-            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        return update_status_and_respond(
+            vehicle_id, data["vehicle_status"], VehicleService(g.db)
         )
+
+    except (MalformedJSONError, EmptyJSONError, MissingParametersJSONError) as e:
+        return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
 
 # PATCH api/v1/vehicles/<id>
-@vehicle_bp.route("/<int:vehicle_id>", methods=["PATCH"])
+@vehicle_bp.route("/<int:vehicle_id>/disable", methods=["POST"])
 def disable_vehicle(vehicle_id: int):
-    service = VehicleService(g.db)
-    data = None
-
-    try:
-        data = request.get_json()
-    except Exception:
-        return error_response("Malformed JSON body", HTTPStatus.BAD_REQUEST)
-
-    if not data:
-        return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
-
-    required_fields = ["vehicle_status"]
-    missing_params: list[str] = [
-        field for field in required_fields if field not in data
-    ]
-
-    if missing_params:
-        return error_response(
-            f"{', '.join(missing_params)} missing from JSON body",
-            HTTPStatus.BAD_REQUEST,
-        )
-
-    try:
-        status = service.update_status(vehicle_id, "unavailable")
-        return json_response(status, HTTPStatus.OK)
-    except VehicleDoesNotExistsError as e:
-        return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
-    except VehicleUpdateError as e:
-        return error_response(str(e), HTTPStatus.NOT_FOUND)
-    except psycopg2.errors.CheckViolation:
-        return error_response("Invalid vehicle status", HTTPStatus.BAD_REQUEST)
-    except Exception:
-        return error_response(
-            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
-        )
-
+    return update_status_and_respond(
+        id=vehicle_id,
+        service=VehicleService(g.db),
+        new_status="unavailable"
+    )
 
 # DELETE api/v1/vehicles/<id>
 @vehicle_bp.route("/<int:vehicle_id>", methods=["DELETE"])

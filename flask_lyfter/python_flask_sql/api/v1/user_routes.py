@@ -2,14 +2,17 @@ from flask import Blueprint, g, request
 import psycopg2
 from http import HTTPStatus
 
+from .utils import validate_json, update_status_and_respond
+
 from ...services.user_service import (
     UserService,
     UserDoesNotExistsError,
     DbRetrievalError,
     AlreadyExistsError,
     UserCreationError,
-    UserUpdateError,
 )
+
+from ..errors.json_errors import EmptyJSONError, MalformedJSONError, MissingParametersJSONError
 from .responses import json_response, error_response
 
 user_bp = Blueprint("user_bp", __name__)
@@ -99,41 +102,15 @@ def get_user(user_id: int):
 # PATCH api/v1/users/<id>
 @user_bp.route("/<int:user_id>", methods=["PATCH"])
 def update_user(user_id: int):
-    service = UserService(g.db)
-    data = None
-
     try:
-        data = request.get_json()
-    except Exception:
-        return error_response("Malformed JSON body", HTTPStatus.BAD_REQUEST)
+        data = validate_json(request, ["account_status"])
 
-    if not data:
-        return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
-
-    required_fields = ["account_status"]
-    missing_params: list[str] = [
-        field for field in required_fields if field not in data
-    ]
-
-    if missing_params:
-        return error_response(
-            f"{', '.join(missing_params)} missing from JSON body",
-            HTTPStatus.BAD_REQUEST,
+        return update_status_and_respond(
+            user_id, data["account_status"], UserService(g.db)
         )
 
-    try:
-        account = service.update_status(user_id, data.get("account_status"))
-        return json_response(account, HTTPStatus.OK)
-    except UserDoesNotExistsError as e:
-        return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
-    except UserUpdateError as e:
-        return error_response(str(e), HTTPStatus.NOT_FOUND)
-    except psycopg2.errors.CheckViolation:
-        return error_response("Invalid account status", HTTPStatus.BAD_REQUEST)
-    except Exception:
-        return error_response(
-            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
-        )
+    except (MalformedJSONError, EmptyJSONError, MissingParametersJSONError) as e:
+        return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
 
 # DELETE api/v1/users/<id>

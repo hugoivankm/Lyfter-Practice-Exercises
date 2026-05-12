@@ -2,9 +2,10 @@ from typing import Optional
 
 from psycopg2.extensions import connection as _connection
 from ..models.vehicle import Vehicle, VehicleStatus
+from .repository import BaseRepository
 
 
-class VehicleRepository:
+class VehicleRepository(BaseRepository):
     def __init__(self, db_conn: _connection) -> None:
         self.db = db_conn
 
