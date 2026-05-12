@@ -10,3 +10,7 @@ __pycache__/
 
 # Ruff cache
 .ruff_cache/
+
+# Project requirements
+requirements.md
+

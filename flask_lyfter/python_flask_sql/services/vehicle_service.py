@@ -1,0 +1,93 @@
+import psycopg2
+from typing import Any, Optional
+
+from psycopg2.extensions import connection as _connection
+
+from .service import BaseService
+from ..repositories.vehicle_repository import Vehicle, VehicleRepository, VehicleStatus
+from ..api.errors.vehicle_errors import (
+    VehicleCreationError,
+    VehicleDeletionError,
+    VehicleDoesNotExistsError,
+    VehicleUpdateError,
+)
+
+from flask_lyfter.python_flask_sql.api.errors.database_errors import DbRetrievalError
+
+
+class VehicleService(BaseService):
+    def __init__(self, db_conn: _connection) -> None:
+        self.vehicle_repo = VehicleRepository(db_conn)
+
+    def register(
+        self, make: str, model: str, model_year: int, vehicle_status: Optional[VehicleStatus]
+    ) -> dict[str, Any]:
+
+        new_vehicle: Vehicle | None = self.vehicle_repo.create(
+            make, model, model_year, vehicle_status
+        )
+
+        if new_vehicle is None:
+            raise VehicleCreationError("unable to create Vehicle")
+
+        return new_vehicle.to_dict()
+
+    def get(self, vehicle_id: int) -> dict[str, Any]:
+        try:
+            vehicle = self.vehicle_repo.get_by_id(vehicle_id)
+            if vehicle is None:
+                raise VehicleDoesNotExistsError(
+                    f"Vehicle with id: {vehicle_id} does not exist in database"
+                )
+            return vehicle.to_dict()
+        except Exception as e:
+            print(f"get vehicle error: {e}")
+            raise DbRetrievalError("unable to retrieve Vehicle ")
+
+    def delete(self, vehicle_id: int):
+        try:
+            deleted_vehicle = self.vehicle_repo.delete(vehicle_id)
+            if deleted_vehicle is None:
+                raise VehicleDoesNotExistsError(
+                    f" Vehicle with id: {vehicle_id} does not exist and cannot be deleted"
+                )
+            return deleted_vehicle.to_dict()
+        except psycopg2.IntegrityError:
+            raise VehicleDeletionError(
+                "Vehicle cannot be deleted due to active dependencies."
+            )
+        except VehicleDoesNotExistsError:
+            raise
+        except psycopg2.Error as e:
+            print(f"Delete vehicle error: {e}")
+            raise DbRetrievalError(
+                f"Internal database error during deletion of vehicle {vehicle_id}"
+            )
+
+    def update_status(self, vehicle_id: int, new_status: str):
+        try:
+            vehicle_status = None
+            try:
+                vehicle_status = VehicleStatus(new_status)
+            except ValueError:
+                raise VehicleUpdateError(f"Invalid status: {new_status}")
+
+            db_vehicle_status = self.vehicle_repo.get_by_id(vehicle_id)
+            if not db_vehicle_status:
+                raise VehicleDoesNotExistsError(
+                    f"User with id: {vehicle_id} does not exist and cannot be updated"
+                )
+
+            updated_vehicle = self.vehicle_repo.update_status(
+                vehicle_id, vehicle_status
+            )
+
+            if not updated_vehicle:
+                raise VehicleUpdateError("Unable to update vehicle in database")
+
+            return updated_vehicle.to_dict()
+
+        except VehicleDoesNotExistsError:
+            raise
+        except VehicleUpdateError:
+            raise
