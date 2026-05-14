@@ -1,23 +1,22 @@
-from typing import Any
+from typing import Optional
 from psycopg2.extensions import connection as _connection
 
 from .repository import BaseRepository
+from ..models.rental import Rental, RentalStatus
 
 
-class RentalsRepository(BaseRepository):
+class RentalRepository(BaseRepository):
     def __init__(self, db_conn: _connection) -> None:
         self.db = db_conn
 
-    def create(self, users_id: int, vehicles_id: int) -> (tuple[Any, ...] | None):
+    def create(
+        self, users_id: int, vehicles_id: int, rental_status: RentalStatus
+    ) -> Optional[Rental]:
         with self.db.cursor() as cur:
             cur.execute(
-                "INSERT INTO lyfter_car_rental.rentals (users_id, vehicles_id) VALUES (%s, %s) RETURNING id",
-                (users_id, vehicles_id),
+                "INSERT INTO lyfter_car_rental.rentals (users_id, vehicles_id, status) VALUES (%s, %s, %s) RETURNING *",
+                (users_id, vehicles_id, rental_status),
             )
 
-            result: tuple[Any, ...] | None = cur.fetchone()
-            
-            if result:
-                (rental_id,) = result
-                return rental_id
-            return None
+            row = cur.fetchone()
+            return Rental.from_row(row)

@@ -4,3 +4,10 @@ class DbRetrievalError(Exception):
     """
 
     pass
+
+class InvalidStatusError(Exception):
+    """
+    Raised when an invalid status is received for an entity
+    """
+
+    pass

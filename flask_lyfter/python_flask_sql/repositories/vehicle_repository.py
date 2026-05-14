@@ -15,9 +15,7 @@ class VehicleRepository(BaseRepository):
         model: str,
         model_year: int,
         vehicle_status: Optional[VehicleStatus],
-    ):
-        if vehicle_status not in VehicleStatus:
-            vehicle_status = VehicleStatus.AVAILABLE
+    ) -> Optional[Vehicle]:
 
         with self.db.cursor() as cur:
             query = """
@@ -43,7 +41,9 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def update_status(self, vehicle_id: int, status: VehicleStatus) -> Optional[Vehicle]:
+    def update_status(
+        self, vehicle_id: int, status: VehicleStatus
+    ) -> Optional[Vehicle]:
         with self.db.cursor() as cur:
             if status not in VehicleStatus:
                 return None
@@ -68,3 +68,20 @@ class VehicleRepository(BaseRepository):
             cur.execute(query, (vehicle_id,))
             row = cur.fetchone()
             return Vehicle.from_row(row)
+
+    def get_all(self, status: Optional[VehicleStatus]) -> list[Optional[Vehicle]]:
+        query = """
+            SELECT id, make, model, model_year, vehicle_status
+            FROM lyfter_car_rental.vehicles 
+        """
+
+        params: list[str] = []
+
+        if status is not None:
+            query += " WHERE vehicle_status = %s"
+            params.append(status.value)
+
+        with self.db.cursor() as cur:
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            return [Vehicle.from_row(row) for row in rows]

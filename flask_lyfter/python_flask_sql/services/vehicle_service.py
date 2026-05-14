@@ -12,7 +12,7 @@ from ..api.errors.vehicle_errors import (
     VehicleUpdateError,
 )
 
-from ..api.errors.database_errors import DbRetrievalError
+from ..api.errors.database_errors import DbRetrievalError, InvalidStatusError
 
 
 class VehicleService(BaseService):
@@ -20,7 +20,11 @@ class VehicleService(BaseService):
         self.vehicle_repo = VehicleRepository(db_conn)
 
     def register(
-        self, make: str, model: str, model_year: int, vehicle_status: Optional[VehicleStatus]
+        self,
+        make: str,
+        model: str,
+        model_year: int,
+        vehicle_status: Optional[VehicleStatus] = VehicleStatus.AVAILABLE,
     ) -> dict[str, Any]:
 
         new_vehicle: Vehicle | None = self.vehicle_repo.create(
@@ -42,6 +46,28 @@ class VehicleService(BaseService):
             return vehicle.to_dict()
         except Exception as e:
             print(f"get vehicle error: {e}")
+            raise DbRetrievalError("unable to retrieve Vehicle ")
+
+    def get_all(self, status: str | None) -> list[dict[str, Any]]:
+        try:
+            if status is not None:
+                status = VehicleStatus(status)
+            vehicles = self.vehicle_repo.get_all(status)
+            if len(vehicles) < 1:
+                raise VehicleDoesNotExistsError("vehicle list is empty")
+
+            
+
+            result: list[dict[str, Any]] = []
+            for vehicle in vehicles:
+                assert isinstance(vehicle, Vehicle)
+                result.append(vehicle.to_dict())
+            print(f"Vehicles: {result}") 
+            return result
+
+        except ValueError:
+            raise InvalidStatusError("Invalid status")
+        except psycopg2.Error:
             raise DbRetrievalError("unable to retrieve Vehicle ")
 
     def delete(self, id: int):
@@ -78,9 +104,7 @@ class VehicleService(BaseService):
                     f"User with id: {id} does not exist and cannot be updated"
                 )
 
-            updated_vehicle = self.vehicle_repo.update_status(
-                id, vehicle_status
-            )
+            updated_vehicle = self.vehicle_repo.update_status(id, vehicle_status)
 
             if not updated_vehicle:
                 raise VehicleUpdateError("Unable to update vehicle in database")

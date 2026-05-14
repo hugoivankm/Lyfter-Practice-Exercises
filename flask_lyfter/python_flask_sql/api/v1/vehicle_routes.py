@@ -26,26 +26,44 @@ vehicle_bp = Blueprint("vehicle_bp", __name__)
 def create_vehicle():
     try:
         data = validate_json(request, ["make", "model", "model_year"])
+
+        # Call service to handle creation
+        service = VehicleService(g.db)
+        vehicle_dict = service.register(
+            data["make"], data["model"], data["model_year"], data.get("vehicle_status")
+        )
+
+        return json_response(vehicle_dict, HTTPStatus.CREATED)
     except MalformedJSONError:
         return error_response("Malformed JSON body", HTTPStatus.BAD_REQUEST)
     except EmptyJSONError:
         return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
     except MissingParametersJSONError as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
-
-    # Call service to handle creation
-    service = VehicleService(g.db)
-    vehicle_dict = service.register(
-        data["make"], data["model"], data["model_year"], data.get("vehicle_status")
-    )
-
-    return json_response(vehicle_dict, HTTPStatus.CREATED)
+    except Exception:
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
 # GET api/v1/vehicles
 @vehicle_bp.route("/", methods=["GET"])
 def list_vehicles():
-    raise NotImplementedError()
+    status: str | None = request.args.get("status")
+    try:
+        service = VehicleService(g.db)
+        vehicles = service.get_all(status)
+        return json_response(vehicles)
+    except ValueError as e:
+        return error_response(str(e), HTTPStatus.BAD_REQUEST)
+    except psycopg2.Error:
+        print("Unable to fetch vehicles from database")
+        raise Exception
+    except Exception as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
 # GET api/v1/vehicles/<id>
@@ -59,6 +77,10 @@ def get_vehicle(vehicle_id: int):
         return error_response(str(e), HTTPStatus.NOT_FOUND)
     except DbRetrievalError as e:
         return error_response(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+    except Exception:
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
 # PATCH api/v1/vehicles/<id>
@@ -73,16 +95,36 @@ def update_vehicle_status(vehicle_id: int):
 
     except (MalformedJSONError, EmptyJSONError, MissingParametersJSONError) as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
+    except Exception as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
+# Special case checking the implementation of an action based endpoint
+# in contrast with a resource based one
 # PATCH api/v1/vehicles/<id>
-@vehicle_bp.route("/<int:vehicle_id>/disable", methods=["POST"])
+@vehicle_bp.route("/<int:vehicle_id>", methods=["POST"])
 def disable_vehicle(vehicle_id: int):
-    return update_status_and_respond(
-        id=vehicle_id,
-        service=VehicleService(g.db),
-        new_status="unavailable"
-    )
+    try:
+        data = validate_json(request, ["action"])
+
+        action = data.get("action")
+        if action == "disable":
+            return update_status_and_respond(
+                id=vehicle_id, service=VehicleService(g.db), new_status="unavailable"
+            )
+        return error_response("Invalid Action", HTTPStatus.BAD_REQUEST)
+
+    except (MalformedJSONError, EmptyJSONError, MissingParametersJSONError) as e:
+        return error_response(str(e), HTTPStatus.BAD_REQUEST)
+    except Exception as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+
 
 # DELETE api/v1/vehicles/<id>
 @vehicle_bp.route("/<int:vehicle_id>", methods=["DELETE"])
@@ -97,7 +139,8 @@ def delete_vehicle(vehicle_id: int):
         )
     except VehicleDoesNotExistsError:
         return error_response("vehicle does not exist", HTTPStatus.UNPROCESSABLE_ENTITY)
-    except Exception:
+    except Exception as e:
+        print(str(e))
         return error_response(
             "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
         )

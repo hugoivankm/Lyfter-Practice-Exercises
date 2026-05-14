@@ -24,7 +24,7 @@ class Rental:
     status: RentalStatus
 
     @classmethod
-    def from_row(cls, row: Tuple[Any, ...]) -> Optional["Rental"]:
+    def from_row(cls, row: Tuple[Any, ...] | None) -> Optional["Rental"]:
         if not row:
             return None
         return cls(

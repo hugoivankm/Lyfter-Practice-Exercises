@@ -2,7 +2,7 @@ from flask import jsonify
 from typing import Any
 from http import HTTPStatus
 
-def json_response(data: dict[str, Any],  status_code: HTTPStatus = HTTPStatus.OK):
+def json_response(data: dict[str, Any] | list[dict[str, Any]],  status_code: HTTPStatus = HTTPStatus.OK):
     return jsonify({
         "status": "success",
         "data" : data,

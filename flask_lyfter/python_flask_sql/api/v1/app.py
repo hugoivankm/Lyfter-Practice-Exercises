@@ -51,4 +51,3 @@ def teardown_request(exception: Optional[BaseException] = None) -> None:
                 db_conn.rollback()
         finally:
             db_manager.release_connection(db_conn)
-        
