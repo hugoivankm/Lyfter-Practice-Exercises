@@ -7,7 +7,7 @@ from .service import BaseService
 from .user_service import UserService
 from .vehicle_service import VehicleService
 
-from ..repositories.rental_repository import RentalRepository
+from ..repositories.rental_repository import Rental, RentalRepository
 
 from ..models.rental import RentalStatus
 from ..models.user import AccountStatus
@@ -16,7 +16,7 @@ from ..models.vehicle import VehicleStatus
 from ..api.errors.rental_errors import RentalCreationError, RentalDoesNotExistsError, RentalUpdateError
 from ..api.errors.user_errors import UserDoesNotExistsError
 from ..api.errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
-from ..api.errors.database_errors import DbRetrievalError
+from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
 
 
 class RentalService(BaseService):
@@ -93,6 +93,23 @@ class RentalService(BaseService):
         except psycopg2.Error as e:
             print(f"get rental error: {e}")
             raise DbRetrievalError("unable to retrieve rental")
+
+    def get_all(self, status: dict[str, str] | None) -> list[dict[str, Any]]:
+        try:
+            rentals = self.rental_repo.get_all(status)
+            if len(rentals) < 1:
+                raise RentalDoesNotExistsError("rental list is empty")
+
+            results: list[dict[str, Any]] = []
+            for rental in rentals:
+                assert isinstance(rental, Rental)
+                results.append(rental.to_dict())
+            return results
+        
+        except ValueError:
+            raise InvalidFilterError("invalid filter")
+        except psycopg2.Error:
+            raise DbRetrievalError("unable to retrieve vehicle")
 
     def delete(self, id: int) -> None:
         raise NotImplementedError()

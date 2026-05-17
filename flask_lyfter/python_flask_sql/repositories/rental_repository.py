@@ -24,8 +24,8 @@ class RentalRepository(BaseRepository):
 
             row = cur.fetchone()
             return Rental.from_row(row)
-        
-    def get_by_id(self, id : int) -> Optional[Rental]:
+
+    def get_by_id(self, id: int) -> Optional[Rental]:
         query = """
             SELECT id, users_id, vehicles_id, rental_date, status
             FROM lyfter_car_rental.rentals
@@ -36,7 +36,7 @@ class RentalRepository(BaseRepository):
             cur.execute(query, (id,))
             row = cur.fetchone()
             return Rental.from_row(row)
-    
+
     def update_status(self, id: int, status: RentalStatus) -> Optional[Rental]:
         with self.db.cursor() as cur:
             if status not in RentalStatus:
@@ -47,13 +47,19 @@ class RentalRepository(BaseRepository):
             WHERE id = %s
             RETURNING *
             """
-            
+
             cur.execute(query, (status, id))
             row = cur.fetchone()
             return Rental.from_row(row)
 
     def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Rental]]:
-        allowed_keys = {f.name for f in fields(Rental)}
+        all_fields = fields(Rental)
+        string_keys = {f.name for f in all_fields if f.type is str}
+
+        allowed_keys = {f.name for f in all_fields}
+        forbidden_key = {"id"}
+
+        valid_keys = allowed_keys - forbidden_key
 
         base_query = """
             SELECT id, users_id, vehicles_id, rental_date, status
@@ -66,10 +72,15 @@ class RentalRepository(BaseRepository):
         if filters:
             where_clauses: list[Composable] = []
             for key, value in filters.items():
-                if key not in allowed_keys:
+                if key not in valid_keys:
                     raise ValueError(f"Invalid filter parameter: '{key}'")
 
-                where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
+                if key in string_keys:
+                    where_clauses.append(
+                        sql.SQL("{} ILIKE %s").format(sql.Identifier(key))
+                    )
+                else:
+                    where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
 
                 params.append(value)
 

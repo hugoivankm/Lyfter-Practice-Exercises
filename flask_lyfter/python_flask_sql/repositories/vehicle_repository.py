@@ -73,7 +73,13 @@ class VehicleRepository(BaseRepository):
             return Vehicle.from_row(row)
 
     def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Vehicle]]:
-        allowed_keys = {f.name for f in fields(Vehicle)}
+        all_fields = fields(Vehicle)
+        string_keys = {f.name for f in all_fields if f.type is str}
+
+        allowed_keys = {f.name for f in all_fields}
+        forbidden_key = {"id"}
+
+        valid_keys = allowed_keys - forbidden_key
 
         base_query = """
             SELECT id, make, model, model_year, vehicle_status
@@ -86,11 +92,16 @@ class VehicleRepository(BaseRepository):
         if filters:
             where_clauses: list[Composable] = []
             for key, value in filters.items():
-                if key not in allowed_keys:
+                if key not in valid_keys:
                     raise ValueError(f"Invalid filter parameter: '{key}'")
 
-                where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
-
+                if key in string_keys:
+                    where_clauses.append(
+                        sql.SQL("{} ILIKE %s").format(sql.Identifier(key))
+                    )
+                else:
+                    where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
+                    
                 params.append(value)
 
             if where_clauses:

@@ -12,7 +12,7 @@ from ..api.errors.vehicle_errors import (
     VehicleUpdateError,
 )
 
-from ..api.errors.database_errors import DbRetrievalError, InvalidStatusError
+from ..api.errors.database_errors import DbRetrievalError, InvalidStatusError, InvalidFilterError
 
 
 class VehicleService(BaseService):
@@ -41,34 +41,30 @@ class VehicleService(BaseService):
             vehicle = self.vehicle_repo.get_by_id(id)
             if vehicle is None:
                 raise VehicleDoesNotExistsError(
-                    f"Vehicle with id: {id} does not exist in database"
+                    f"vehicle with id: {id} does not exist in database"
                 )
             return vehicle.to_dict()
         except Exception as e:
             print(f"get vehicle error: {e}")
             raise DbRetrievalError("unable to retrieve Vehicle ")
 
-    def get_all(self, status: str | None) -> list[dict[str, Any]]:
+    def get_all(self, status: dict[str, str] | None) -> list[dict[str, Any]]:
         try:
-            if status is not None:
-                status = VehicleStatus(status)
             vehicles = self.vehicle_repo.get_all(status)
             if len(vehicles) < 1:
                 raise VehicleDoesNotExistsError("vehicle list is empty")
 
-            
-
-            result: list[dict[str, Any]] = []
+            results: list[dict[str, Any]] = []
             for vehicle in vehicles:
                 assert isinstance(vehicle, Vehicle)
-                result.append(vehicle.to_dict())
-            print(f"Vehicles: {result}") 
-            return result
+                results.append(vehicle.to_dict())
+            return results
 
         except ValueError:
-            raise InvalidStatusError("Invalid status")
-        except psycopg2.Error:
-            raise DbRetrievalError("unable to retrieve Vehicle ")
+            raise InvalidFilterError("invalid filter")
+        except psycopg2.Error as pe:
+            print(pe)
+            raise DbRetrievalError("unable to retrieve vehicle")
 
     def delete(self, id: int):
         try:
@@ -80,14 +76,14 @@ class VehicleService(BaseService):
             return deleted_vehicle.to_dict()
         except psycopg2.IntegrityError:
             raise VehicleDeletionError(
-                "Vehicle cannot be deleted due to active dependencies."
+                "vehicle cannot be deleted due to active dependencies."
             )
         except VehicleDoesNotExistsError:
             raise
         except psycopg2.Error as e:
             print(f"Delete vehicle error: {e}")
             raise DbRetrievalError(
-                f"Internal database error during deletion of vehicle {id}"
+                f"internal database error during deletion of vehicle {id}"
             )
 
     def update_status(self, id: int, new_status: VehicleStatus):
@@ -96,18 +92,18 @@ class VehicleService(BaseService):
             try:
                 vehicle_status = VehicleStatus(new_status)
             except ValueError:
-                raise VehicleUpdateError(f"Invalid status: {new_status}")
+                raise InvalidStatusError(f"invalid status: {new_status}")
 
             db_vehicle_status = self.vehicle_repo.get_by_id(id)
             if not db_vehicle_status:
                 raise VehicleDoesNotExistsError(
-                    f"User with id: {id} does not exist and cannot be updated"
+                    f"user with id: {id} does not exist and cannot be updated"
                 )
 
             updated_vehicle = self.vehicle_repo.update_status(id, vehicle_status)
 
             if not updated_vehicle:
-                raise VehicleUpdateError("Unable to update vehicle in database")
+                raise VehicleUpdateError("unable to update vehicle in database")
 
             return updated_vehicle.to_dict()
 

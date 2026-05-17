@@ -12,6 +12,8 @@ from ...services.user_service import (
     UserCreationError,
 )
 
+from ..errors.database_errors import InvalidFilterError
+
 from ..errors.json_errors import (
     EmptyJSONError,
     MalformedJSONError,
@@ -83,14 +85,38 @@ def create_user():
 # GET api/v1/users/
 @user_bp.route("/", methods=["GET"])
 def list_users():
-    raise NotImplementedError()
+    try:
+        filters: dict[str, str] | None = request.args.to_dict()
+
+        for key, value in filters.items():
+            if value.strip() == "":
+                return error_response(
+                    f"Query parameter '{key}' cannot be empty", HTTPStatus.BAD_REQUEST
+                )
+
+        service = UserService(g.db)
+        users = service.get_all(filters)
+        return json_response(users)
+    except UserDoesNotExistsError as ue:
+        return error_response(str(ue), HTTPStatus.NOT_FOUND)
+    except InvalidFilterError as fe:
+        return error_response(str(fe), HTTPStatus.BAD_REQUEST)
+    except DbRetrievalError:
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+    except Exception as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
 # GET api/v1/users/<id>
 @user_bp.route("/<int:user_id>", methods=["GET"])
 def get_user(user_id: int):
-    service = UserService(g.db)
     try:
+        service = UserService(g.db)
         user = service.get(user_id)
         return json_response(user)
     except UserDoesNotExistsError as e:
@@ -108,7 +134,6 @@ def get_user(user_id: int):
 def update_user(user_id: int):
     try:
         data = validate_json(request, ["account_status"])
-
         return update_status_and_respond(
             user_id, data["account_status"], UserService(g.db)
         )

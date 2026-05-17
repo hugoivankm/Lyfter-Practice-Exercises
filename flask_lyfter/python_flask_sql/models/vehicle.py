@@ -16,14 +16,14 @@ class Vehicle:
     make: str
     model: str
     model_year: int
-    status: VehicleStatus
+    vehicle_status: VehicleStatus
 
     @classmethod
     def from_row(cls, row: Tuple[Any, ...] | None) -> Optional["Vehicle"]:
         if not row:
             return None
         return cls(
-            id=row[0], make=row[1], model=row[2], model_year=row[3], status=row[4]
+            id=row[0], make=row[1], model=row[2], model_year=row[3], vehicle_status=row[4]
         )
 
     def to_dict(self):

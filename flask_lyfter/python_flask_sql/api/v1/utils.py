@@ -11,6 +11,7 @@ from ..errors.json_errors import (
 
 from ..errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
 from ..errors.user_errors import UserDoesNotExistsError, UserUpdateError
+from ..errors.database_errors import InvalidStatusError
 from .responses import json_response, error_response
 
 class StatusUpdatable(Protocol):
@@ -57,6 +58,8 @@ def update_status_and_respond(id: int, new_status: str, service: StatusUpdatable
     
     # --- Database Errors ---
     except psycopg2.errors.CheckViolation:
+        return error_response("Invalid status", HTTPStatus.BAD_REQUEST)
+    except InvalidStatusError:
         return error_response("Invalid status", HTTPStatus.BAD_REQUEST)
     
     # --- User Errors ---     

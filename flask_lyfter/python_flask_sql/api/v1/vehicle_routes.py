@@ -14,7 +14,7 @@ from ..errors.json_errors import (
 
 from ..errors.vehicle_errors import VehicleDoesNotExistsError
 
-from ..errors.database_errors import DbRetrievalError
+from ..errors.database_errors import DbRetrievalError, InvalidFilterError
 
 from .responses import json_response, error_response
 
@@ -49,16 +49,27 @@ def create_vehicle():
 # GET api/v1/vehicles
 @vehicle_bp.route("/", methods=["GET"])
 def list_vehicles():
-    status: str | None = request.args.get("status")
     try:
+        filters: dict[str, str] | None = request.args.to_dict()
+
+        for key, value in filters.items():
+            if value.strip() == "":
+                return error_response(
+                    f"Query parameter '{key}' cannot be empty", HTTPStatus.BAD_REQUEST
+                )
+
         service = VehicleService(g.db)
-        vehicles = service.get_all(status)
+        vehicles = service.get_all(filters)
         return json_response(vehicles)
-    except ValueError as e:
-        return error_response(str(e), HTTPStatus.BAD_REQUEST)
-    except psycopg2.Error:
-        print("Unable to fetch vehicles from database")
-        raise Exception
+    except VehicleDoesNotExistsError as ve:
+        return error_response(str(ve), HTTPStatus.NOT_FOUND)
+    except InvalidFilterError as fe:
+        return error_response(str(fe), HTTPStatus.BAD_REQUEST)
+    except DbRetrievalError as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
     except Exception as e:
         print(str(e))
         return error_response(

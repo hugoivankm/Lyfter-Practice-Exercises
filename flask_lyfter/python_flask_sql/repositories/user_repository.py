@@ -10,7 +10,6 @@ from .repository import BaseRepository
 from ..models.user import User, AccountStatus
 
 
-
 class UserRepository(BaseRepository):
     def __init__(self, db_conn: _connection):
         self.db = db_conn
@@ -67,18 +66,23 @@ class UserRepository(BaseRepository):
         with self.db.cursor() as cur:
             if status not in AccountStatus:
                 return None
+            
             query: str = """
             UPDATE lyfter_car_rental.users
             SET account_status = %s
             WHERE id = %s
             RETURNING *
             """
+
             cur.execute(query, (status.value, id))
             row = cur.fetchone()
             return User.from_row(row)
-    
+
     def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[User]]:
-        allowed_keys = {f.name for f in fields(User)}
+        allowed_keys: set[str] = {f.name for f in fields(User)}
+        forbidden_keys: set[str] = {"id"}
+
+        valid_keys = allowed_keys - forbidden_keys
 
         base_query = """
             SELECT id, email, username, password, birthdate, account_status
@@ -91,10 +95,10 @@ class UserRepository(BaseRepository):
         if filters:
             where_clauses: list[Composable] = []
             for key, value in filters.items():
-                if key not in allowed_keys:
+                if key not in valid_keys:
                     raise ValueError(f"Invalid filter parameter: '{key}'")
 
-                where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
+                where_clauses.append(sql.SQL("{} ILIKE %s").format(sql.Identifier(key)))
 
                 params.append(value)
 

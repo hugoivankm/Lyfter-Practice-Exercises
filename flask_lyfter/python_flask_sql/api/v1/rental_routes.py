@@ -4,8 +4,12 @@ from http import HTTPStatus
 
 from .responses import json_response, error_response
 from ..errors.rental_errors import RentalDoesNotExistsError, RentalCreationError
-from ..errors.database_errors import DbRetrievalError
-from ..errors.json_errors import EmptyJSONError, MalformedJSONError, MissingParametersJSONError
+from ..errors.database_errors import DbRetrievalError, InvalidFilterError
+from ..errors.json_errors import (
+    EmptyJSONError,
+    MalformedJSONError,
+    MissingParametersJSONError,
+)
 
 from .utils import validate_json, update_status_and_respond
 
@@ -34,7 +38,7 @@ def create_rental():
             f"{', '.join(missing_params)} missing from JSON body",
             HTTPStatus.BAD_REQUEST,
         )
-    
+
     try:
         # Call service to handle creation
         service = RentalService(g.db)
@@ -56,7 +60,9 @@ def create_rental():
 
     except RentalCreationError as e:
         print(str(e))
-        return error_response( "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR)
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
     except Exception as e:
         print(str(e))
         return error_response(
@@ -66,7 +72,31 @@ def create_rental():
 
 @rental_bp.route("/", methods=["GET"])
 def list_rentals():
-    raise NotImplementedError()
+    try:
+        filters: dict[str, str] | None = request.args.to_dict()
+
+        for key, value in filters.items():
+            if value.strip() == "":
+                return error_response(
+                    f"Query parameter '{key}' cannot be empty", HTTPStatus.BAD_REQUEST
+                )
+
+        service = RentalService(g.db)
+        rentals = service.get_all(filters)
+        return json_response(rentals)
+    except RentalDoesNotExistsError as ue:
+        return error_response(str(ue), HTTPStatus.NOT_FOUND)
+    except InvalidFilterError as fe:
+        return error_response(str(fe), HTTPStatus.BAD_REQUEST)
+    except DbRetrievalError:
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+    except Exception as e:
+        print(str(e))
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )
 
 
 @rental_bp.route("/<int:rental_id>", methods=["GET"])
@@ -98,8 +128,7 @@ def update_rental(rental_id: int):
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
 
-
-# Simulation of a forbidden endpoint
+# Simulation of a forbidden endpoint, this project doesn't support authorization or authentication
 @rental_bp.route("/<int:rental_id>", methods=["DELETE"])
 def delete_rental(rental_id: int):
     return error_response("Forbidden", HTTPStatus.FORBIDDEN)

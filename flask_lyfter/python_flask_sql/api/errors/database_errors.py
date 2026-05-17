@@ -11,3 +11,10 @@ class InvalidStatusError(Exception):
     """
 
     pass
+
+class InvalidFilterError(Exception):
+    """
+    Raised when an invalid filter is received for an entity
+    """
+
+    pass
