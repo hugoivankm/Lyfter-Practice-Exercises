@@ -20,3 +20,30 @@ class RentalRepository(BaseRepository):
 
             row = cur.fetchone()
             return Rental.from_row(row)
+        
+    def get_by_id(self, id : int) -> Optional[Rental]:
+        query = """
+            SELECT id, users_id, vehicles_id, rental_date, status
+            FROM lyfter_car_rental.rentals
+            WHERE id = %s
+        """
+
+        with self.db.cursor() as cur:
+            cur.execute(query, (id,))
+            row = cur.fetchone()
+            return Rental.from_row(row)
+    
+    def update_status(self, id: int, status: RentalStatus) -> Optional[Rental]:
+        with self.db.cursor() as cur:
+            if status not in RentalStatus:
+                return None
+            query: str = """
+            UPDATE lyfter_car_rental.rental
+            SET rental_status = %s
+            WHERE id = %s
+            RETURNING *
+            """
+            
+            cur.execute(query, (status, id))
+            row = cur.fetchone()
+            return Rental.from_row(row)
