@@ -1,4 +1,8 @@
 from typing import Optional
+from dataclasses import fields
+
+from psycopg2 import sql
+from psycopg2.sql import Composable
 from psycopg2.extensions import connection as _connection
 
 from .repository import BaseRepository
@@ -47,3 +51,35 @@ class RentalRepository(BaseRepository):
             cur.execute(query, (status, id))
             row = cur.fetchone()
             return Rental.from_row(row)
+
+    def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Rental]]:
+        allowed_keys = {f.name for f in fields(Rental)}
+
+        base_query = """
+            SELECT id, users_id, vehicles_id, rental_date, status
+            FROM lyfter_car_rental.rentals
+        """
+
+        query_parts: list[Composable] = [sql.SQL(base_query)]
+        params: list[str] = []
+
+        if filters:
+            where_clauses: list[Composable] = []
+            for key, value in filters.items():
+                if key not in allowed_keys:
+                    raise ValueError(f"Invalid filter parameter: '{key}'")
+
+                where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
+
+                params.append(value)
+
+            if where_clauses:
+                query_parts.append(sql.SQL(" WHERE "))
+                query_parts.append(sql.SQL(" AND ").join(where_clauses))
+
+        final_query = sql.Composed(query_parts)
+
+        with self.db.cursor() as cur:
+            cur.execute(final_query, params)
+            rows = cur.fetchall()
+            return [Rental.from_row(row) for row in rows]

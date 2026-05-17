@@ -9,7 +9,7 @@ from .vehicle_service import VehicleService
 
 from ..repositories.rental_repository import RentalRepository
 
-from ..models.rental import RentalStatus, Rental
+from ..models.rental import RentalStatus
 from ..models.user import AccountStatus
 from ..models.vehicle import VehicleStatus
 
@@ -58,7 +58,7 @@ class RentalService(BaseService):
             print(f"error: {e}")
             raise
 
-    def complete_rental(self, rental_id: int) -> Rental:
+    def complete_rental(self, rental_id: int) -> dict[str, Any]:
         try:
             rental = self.rental_repo.get_by_id(rental_id)
             if rental is None:
@@ -70,7 +70,7 @@ class RentalService(BaseService):
             updated_rental = self.rental_repo.update_status(rental_id, RentalStatus.COMPLETED)
             if updated_rental is None:
                 raise RentalUpdateError("Unable to update rental status")
-            return updated_rental
+            return updated_rental.to_dict()
             
         except psycopg2.Error as e:
             print(f"get rental error: {e}")
@@ -97,5 +97,28 @@ class RentalService(BaseService):
     def delete(self, id: int) -> None:
         raise NotImplementedError()
     
-    def update_status(self, id: int, new_status: RentalStatus) -> None:
-        raise NotImplementedError()
+    def update_status(self, id: int, new_status: Any) -> dict[str, Any]:
+        try:
+            rental_status = None
+            try:
+                rental_status = RentalStatus(new_status)
+            except ValueError:
+                raise RentalUpdateError(f"Invalid status: {new_status}")
+
+            db_user = self.rental_repo.get_by_id(id)
+            if not db_user:
+                raise RentalDoesNotExistsError(
+                    f"Rental with id: {id} does not exist and cannot be updated"
+                )
+
+            updated_rental = self.rental_repo.update_status(id, rental_status)
+
+            if not updated_rental:
+                raise RentalUpdateError("Unable to update user in database")
+
+            return updated_rental.to_dict()
+
+        except UserDoesNotExistsError:
+            raise
+        except RentalUpdateError:
+            raise

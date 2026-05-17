@@ -12,7 +12,11 @@ from ...services.user_service import (
     UserCreationError,
 )
 
-from ..errors.json_errors import EmptyJSONError, MalformedJSONError, MissingParametersJSONError
+from ..errors.json_errors import (
+    EmptyJSONError,
+    MalformedJSONError,
+    MissingParametersJSONError,
+)
 from .responses import json_response, error_response
 
 user_bp = Blueprint("user_bp", __name__)
@@ -108,7 +112,6 @@ def update_user(user_id: int):
         return update_status_and_respond(
             user_id, data["account_status"], UserService(g.db)
         )
-
     except (MalformedJSONError, EmptyJSONError, MissingParametersJSONError) as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
