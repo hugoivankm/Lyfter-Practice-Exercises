@@ -188,3 +188,4 @@ class ResponseManager:
         if isinstance(data, list):
             return jsonify([t.to_dict() for t in data]), status_code
         return jsonify(data.to_dict()), status_code
+    

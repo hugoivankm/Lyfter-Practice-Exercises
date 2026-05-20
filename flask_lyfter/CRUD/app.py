@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, Response
+from flask import Flask, request, Response
 from tasks import TasksManager, ResponseManager
 
 app: Flask = Flask(__name__)
