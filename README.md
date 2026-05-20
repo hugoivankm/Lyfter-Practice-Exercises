@@ -31,13 +31,62 @@ Lyfter-Practice-Exercises
 │       ├── 003_PURCHASE_TRASACTION.sql
 │       └── 004_PRODUCT_RETURN_TRANSACTION.sql
 ├── flask_lyfter
-│   └── CRUD
-│       ├── app.py
-│       ├── pyproject.toml
-│       ├── tasks.json
-│       ├── tasks.py
-│       └── uv.lock
-└── README.md
+│   ├── CRUD
+│   │   ├── app.py
+│   │   ├── pyproject.toml
+│   │   ├── tasks.json
+│   │   ├── tasks.py
+│   │   └── uv.lock
+│   └── python_flask_sql
+│       ├── api
+│       │   ├── errors
+│       │   │   ├── __init__.py
+│       │   │   ├── database_errors.py
+│       │   │   ├── json_errors.py
+│       │   │   ├── rental_errors.py
+│       │   │   ├── user_errors.py
+│       │   │   └── vehicle_errors.py
+│       │   ├── v1
+│       │   │   ├── __init__.py
+│       │   │   ├── app.py
+│       │   │   ├── rental_routes.py
+│       │   │   ├── responses.py
+│       │   │   ├── user_routes.py
+│       │   │   ├── utils.py
+│       │   │   └── vehicle_routes.py
+│       │   └── __init__.py
+│       ├── database
+│       │   ├── sql
+│       │   │   └── queries
+│       │   │       ├── 001_CREATE_INITIAL_SCHEMA.sql
+│       │   │       ├── 002_CREATE_USERS_TABLE.sql
+│       │   │       ├── 003_CREATE_VEHICLES_TABLE.sql
+│       │   │       └── 004_CREATE_RENTALS_TABLE.sql
+│       │   ├── __init__.py
+│       │   └── database_manager.py
+│       ├── models
+│       │   ├── __init__.py
+│       │   ├── rental.py
+│       │   ├── user.py
+│       │   └── vehicle.py
+│       ├── repositories
+│       │   ├── __init__.py
+│       │   ├── rental_repository.py
+│       │   ├── repository.py
+│       │   ├── user_repository.py
+│       │   └── vehicle_repository.py
+│       ├── services
+│       │   ├── __init__.py
+│       │   ├── rental_service.py
+│       │   ├── service.py
+│       │   ├── user_service.py
+│       │   └── vehicle_service.py
+│       ├── __init__.py
+│       └── main.py
+├── README.md
+├── main.py
+├── pyproject.toml
+└── uv.lock
 ```
 
 <!-- END -->
