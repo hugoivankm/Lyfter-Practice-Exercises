@@ -12,6 +12,7 @@ from ..errors.json_errors import (
 from ..errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
 from ..errors.user_errors import UserDoesNotExistsError, UserUpdateError
 from ..errors.database_errors import InvalidStatusError
+from ..errors.rental_errors import RentalDoesNotExistsError, RentalUpdateError
 from .responses import json_response, error_response
 
 class StatusUpdatable(Protocol):
@@ -67,6 +68,11 @@ def update_status_and_respond(id: int, new_status: str, service: StatusUpdatable
         return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
     except UserUpdateError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
+    
+    except RentalDoesNotExistsError as e:
+        return error_response(str(e), HTTPStatus.NOT_FOUND)
+    except RentalUpdateError as e:
+        return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
 
     except Exception as e:

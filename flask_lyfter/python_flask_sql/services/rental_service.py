@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extensions import connection as _connection
-from typing import Any
+from typing import Any, Optional
 
 
 from .service import BaseService
@@ -13,7 +13,11 @@ from ..models.rental import RentalStatus
 from ..models.user import AccountStatus
 from ..models.vehicle import VehicleStatus
 
-from ..api.errors.rental_errors import RentalCreationError, RentalDoesNotExistsError, RentalUpdateError
+from ..api.errors.rental_errors import (
+    RentalCreationError,
+    RentalDoesNotExistsError,
+    RentalUpdateError,
+)
 from ..api.errors.user_errors import UserDoesNotExistsError
 from ..api.errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
 from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
@@ -34,7 +38,9 @@ class RentalService(BaseService):
     ):
         try:
             db_account_status = self._user_service.get(users_id).get("account_status")
-            db_vehicle_status = self._vehicle_service.get(vehicles_id).get("vehicle_status")
+            db_vehicle_status = self._vehicle_service.get(vehicles_id).get(
+                "vehicle_status"
+            )
 
             if db_account_status != AccountStatus.ACTIVE:
                 raise RentalCreationError("user account must be in active status")
@@ -46,6 +52,9 @@ class RentalService(BaseService):
             if new_rental is None:
                 raise RentalCreationError("unable to create Rental")
 
+            # update vechicle status
+            _ = self._vehicle_service.update_status(vehicles_id, VehicleStatus.RESERVED)
+
             return new_rental.to_dict()
 
         except (UserDoesNotExistsError, VehicleDoesNotExistsError) as e:
@@ -54,33 +63,12 @@ class RentalService(BaseService):
             raise RentalCreationError(
                 "failed to create rental with invalid account or user status"
             )
+        except VehicleUpdateError as e:
+            print(f"Vehicle creation error: {e}")
+            raise
         except Exception as e:
             print(f"error: {e}")
             raise
-
-    def complete_rental(self, rental_id: int) -> dict[str, Any]:
-        try:
-            rental = self.rental_repo.get_by_id(rental_id)
-            if rental is None:
-                 raise RentalUpdateError("Unable to retrieve rental")
-            
-            vehicle_id: int = rental.vehicles_id
-            self._vehicle_service.update_status(vehicle_id, VehicleStatus.AVAILABLE)
-
-            updated_rental = self.rental_repo.update_status(rental_id, RentalStatus.COMPLETED)
-            if updated_rental is None:
-                raise RentalUpdateError("Unable to update rental status")
-            return updated_rental.to_dict()
-            
-        except psycopg2.Error as e:
-            print(f"get rental error: {e}")
-            raise DbRetrievalError("unable to retrieve rental from database")
-        except VehicleUpdateError:
-            raise RentalUpdateError("Unable to update vehicle status")
-        except Exception as e:
-            print(f"rental completion failed with error: {e}")
-            raise
-
 
     def get(self, id: int) -> dict[str, Any]:
         try:
@@ -98,14 +86,14 @@ class RentalService(BaseService):
         try:
             rentals = self.rental_repo.get_all(status)
             if len(rentals) < 1:
-                raise RentalDoesNotExistsError("rental list is empty")
+                return []
 
             results: list[dict[str, Any]] = []
             for rental in rentals:
                 assert isinstance(rental, Rental)
                 results.append(rental.to_dict())
             return results
-        
+
         except ValueError:
             raise InvalidFilterError("invalid filter")
         except psycopg2.Error:
@@ -114,6 +102,33 @@ class RentalService(BaseService):
     def delete(self, id: int) -> None:
         raise NotImplementedError()
     
+    def _complete_rental(self, rental_id: int) -> Optional[Rental]:
+        try:
+            rental = self.rental_repo.get_by_id(rental_id)
+            if rental is None:
+                raise RentalUpdateError("Unable to retrieve rental")
+
+            vehicle_id: int = rental.vehicles_id
+            v = self._vehicle_service.update_status(vehicle_id, VehicleStatus.AVAILABLE)
+            print(v)
+
+            updated_rental = self.rental_repo.update_status(
+                rental_id, RentalStatus.COMPLETED
+            )
+            if updated_rental is None:
+                raise RentalUpdateError("Unable to update rental status")
+            
+            return updated_rental
+
+        except psycopg2.Error as e:
+            print(f"get rental error: {e}")
+            raise DbRetrievalError("unable to retrieve rental from database")
+        except VehicleUpdateError:
+            raise RentalUpdateError("Unable to update vehicle status")
+        except Exception as e:
+            print(f"rental completion failed with error: {e}")
+            raise
+
     def update_status(self, id: int, new_status: Any) -> dict[str, Any]:
         try:
             rental_status = None
@@ -122,19 +137,26 @@ class RentalService(BaseService):
             except ValueError:
                 raise RentalUpdateError(f"Invalid status: {new_status}")
 
-            db_user = self.rental_repo.get_by_id(id)
-            if not db_user:
+            db_rental = self.rental_repo.get_by_id(id)
+            if not db_rental:
                 raise RentalDoesNotExistsError(
                     f"Rental with id: {id} does not exist and cannot be updated"
                 )
 
-            updated_rental = self.rental_repo.update_status(id, rental_status)
+            
+            if new_status == RentalStatus.COMPLETED:
+                if db_rental.rental_status == RentalStatus.COMPLETED:
+                    raise RentalUpdateError("This rental has already been completed.")
+                updated_rental = self._complete_rental(db_rental.id)
+            else:
+                updated_rental = self.rental_repo.update_status(id, rental_status)
 
             if not updated_rental:
                 raise RentalUpdateError("Unable to update user in database")
 
             return updated_rental.to_dict()
-
+        except DbRetrievalError:
+            raise
         except UserDoesNotExistsError:
             raise
         except RentalUpdateError:

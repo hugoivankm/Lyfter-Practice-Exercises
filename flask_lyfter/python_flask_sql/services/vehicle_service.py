@@ -24,8 +24,11 @@ class VehicleService(BaseService):
         make: str,
         model: str,
         model_year: int,
-        vehicle_status: Optional[VehicleStatus] = VehicleStatus.AVAILABLE,
+        vehicle_status: Optional[VehicleStatus],
     ) -> dict[str, Any]:
+        
+        if vehicle_status is None:
+            vehicle_status = VehicleStatus.AVAILABLE
 
         new_vehicle: Vehicle | None = self.vehicle_repo.create(
             make, model, model_year, vehicle_status

@@ -5,6 +5,7 @@ from typing import Tuple, Any, Optional
 
 class VehicleStatus(StrEnum):
     AVAILABLE = "available"
+    RESERVED = "reserved"
     RENTED = "rented"
     IN_MAINTENANCE = "in_maintenance"
     UNAVAILABLE = "unavailable"
@@ -23,7 +24,11 @@ class Vehicle:
         if not row:
             return None
         return cls(
-            id=row[0], make=row[1], model=row[2], model_year=row[3], vehicle_status=row[4]
+            id=row[0],
+            make=row[1],
+            model=row[2],
+            model_year=row[3],
+            vehicle_status=row[4],
         )
 
     def to_dict(self):

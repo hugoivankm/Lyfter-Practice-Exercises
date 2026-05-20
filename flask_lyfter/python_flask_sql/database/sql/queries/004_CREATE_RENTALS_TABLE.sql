@@ -5,7 +5,7 @@ CREATE TABLE rentals (
     users_id INT NOT NULL,
     vehicles_id INT NOT NULL,
     rental_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) NOT NULL,
+    rental_status VARCHAR(20) NOT NULL,
 
     CONSTRAINT fk_usuario FOREIGN KEY (users_id)
         REFERENCES users(id)

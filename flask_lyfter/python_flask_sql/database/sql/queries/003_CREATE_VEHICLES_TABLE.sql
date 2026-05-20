@@ -8,7 +8,7 @@ CREATE TABLE vehicles (
     model VARCHAR(50) NOT NULL,
     model_year INT NOT NULL,
     vehicle_status VARCHAR(20) NOT NULL
-    CONSTRAINT valid_status CHECK (vehicle_status IN ('rented', 'in_maintenance', 'available', 'unavailable'))
+    CONSTRAINT valid_status CHECK (vehicle_status IN ('rented', 'in_maintenance', 'available', 'unavailable', 'reserved'))
 );
 
 INSERT INTO vehicles (make, model, model_year, vehicle_status) VALUES ('Mitsubishi', 'GTO', 1994, 'rented');

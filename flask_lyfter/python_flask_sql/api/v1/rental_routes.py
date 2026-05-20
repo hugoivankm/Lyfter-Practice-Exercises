@@ -1,6 +1,7 @@
 from flask import Blueprint, g, request
-from services.rental_service import RentalService
 from http import HTTPStatus
+
+from ...services.rental_service import RentalService
 
 from .responses import json_response, error_response
 from ..errors.rental_errors import RentalDoesNotExistsError, RentalCreationError
@@ -16,6 +17,7 @@ from .utils import validate_json, update_status_and_respond
 rental_bp = Blueprint("rental_bp", __name__)
 
 
+# POST api/v1/rentals/
 @rental_bp.route("/", methods=["POST"])
 def create_rental():
     # Parse inputs
@@ -28,7 +30,7 @@ def create_rental():
     if not data:
         return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
 
-    required_fields = ["users_id", "vehicle_id"]
+    required_fields = ["users_id", "vehicles_id"]
     missing_params: list[str] = [
         field for field in required_fields if field not in data
     ]
@@ -39,8 +41,8 @@ def create_rental():
             HTTPStatus.BAD_REQUEST,
         )
 
+    # Call service to handle creation
     try:
-        # Call service to handle creation
         service = RentalService(g.db)
 
         rental_dict = None
@@ -70,6 +72,7 @@ def create_rental():
         )
 
 
+# GET api/v1/rentals/
 @rental_bp.route("/", methods=["GET"])
 def list_rentals():
     try:
@@ -99,12 +102,13 @@ def list_rentals():
         )
 
 
+# GET api/v1/rentals/<id>
 @rental_bp.route("/<int:rental_id>", methods=["GET"])
 def get_rental(rental_id: int):
     service = RentalService(g.db)
     try:
         rental = service.get(rental_id)
-        return json_response(rental, HTTPStatus.OK)
+        return json_response(rental, HTTPStatus.OK)  
     except RentalDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
     except DbRetrievalError as e:
@@ -115,6 +119,7 @@ def get_rental(rental_id: int):
         )
 
 
+# PATCH api/v1/rentals/<id>
 @rental_bp.route("/<int:rental_id>", methods=["PATCH"])
 def update_rental(rental_id: int):
     try:
@@ -129,6 +134,8 @@ def update_rental(rental_id: int):
 
 
 # Simulation of a forbidden endpoint, this project doesn't support authorization or authentication
+# DELETE api/v1/rentals/<id>
 @rental_bp.route("/<int:rental_id>", methods=["DELETE"])
 def delete_rental(rental_id: int):
+    print("forbidden request")
     return error_response("Forbidden", HTTPStatus.FORBIDDEN)

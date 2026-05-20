@@ -18,7 +18,7 @@ class RentalRepository(BaseRepository):
     ) -> Optional[Rental]:
         with self.db.cursor() as cur:
             cur.execute(
-                "INSERT INTO lyfter_car_rental.rentals (users_id, vehicles_id, status) VALUES (%s, %s, %s) RETURNING *",
+                "INSERT INTO lyfter_car_rental.rentals (users_id, vehicles_id, rental_status) VALUES (%s, %s, %s) RETURNING *",
                 (users_id, vehicles_id, rental_status),
             )
 
@@ -27,7 +27,7 @@ class RentalRepository(BaseRepository):
 
     def get_by_id(self, id: int) -> Optional[Rental]:
         query = """
-            SELECT id, users_id, vehicles_id, rental_date, status
+            SELECT id, users_id, vehicles_id, rental_date, rental_status
             FROM lyfter_car_rental.rentals
             WHERE id = %s
         """
@@ -42,7 +42,7 @@ class RentalRepository(BaseRepository):
             if status not in RentalStatus:
                 return None
             query: str = """
-            UPDATE lyfter_car_rental.rental
+            UPDATE lyfter_car_rental.rentals
             SET rental_status = %s
             WHERE id = %s
             RETURNING *
@@ -50,6 +50,7 @@ class RentalRepository(BaseRepository):
 
             cur.execute(query, (status, id))
             row = cur.fetchone()
+            
             return Rental.from_row(row)
 
     def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Rental]]:
@@ -62,7 +63,7 @@ class RentalRepository(BaseRepository):
         valid_keys = allowed_keys - forbidden_key
 
         base_query = """
-            SELECT id, users_id, vehicles_id, rental_date, status
+            SELECT id, users_id, vehicles_id, rental_date, rental_status
             FROM lyfter_car_rental.rentals
         """
 

@@ -40,7 +40,8 @@ def create_vehicle():
         return error_response("Missing JSON body", HTTPStatus.BAD_REQUEST)
     except MissingParametersJSONError as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
-    except Exception:
+    except Exception as e:
+        print(e)
         return error_response(
             "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
         )
