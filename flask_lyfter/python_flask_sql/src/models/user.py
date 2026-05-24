@@ -9,7 +9,6 @@ class AccountStatus(StrEnum):
     ACTIVE = "active"
     DELINQUENT = "delinquent"
 
-
 @dataclass
 class User:
     id: int

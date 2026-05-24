@@ -113,7 +113,7 @@ class VehicleService(BaseService):
         try:
             vehicles = self.vehicle_repo.get_all(status)
             if len(vehicles) < 1:
-                raise VehicleDoesNotExistsError("vehicle list is empty")
+                return []
 
             results: list[dict[str, Any]] = []
             for vehicle in vehicles:

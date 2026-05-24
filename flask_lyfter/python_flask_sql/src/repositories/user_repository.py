@@ -41,7 +41,7 @@ class UserRepository(BaseRepository):
         self.db.rollback()
 
         query = """
-            SELECT id, email, username, password, birthdate, full_name, account_status 
+            SELECT id, email, username, password, full_name, birthdate, account_status 
             FROM lyfter_car_rental.users 
             WHERE id = %s
         """
@@ -86,7 +86,7 @@ class UserRepository(BaseRepository):
         valid_keys = allowed_keys - forbidden_keys
 
         base_query = """
-            SELECT id, email, username, password, birthdate, full_name, account_status
+            SELECT id, email, username, password, full_name, birthdate, account_status
             FROM lyfter_car_rental.users
         """
 
