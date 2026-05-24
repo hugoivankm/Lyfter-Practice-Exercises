@@ -44,10 +44,10 @@ def main() -> None:
     try:
         with conn.cursor() as cur:
             seeding_scripts: list[str] = [
-                "python_flask_sql/database/sql/queries/001_CREATE_INITIAL_SCHEMA.sql",
-                "python_flask_sql/database/sql/queries/002_CREATE_USERS_TABLE.sql",
-                "python_flask_sql/database/sql/queries/003_CREATE_VEHICLES_TABLE.sql",
-                "python_flask_sql/database/sql/queries/004_CREATE_RENTALS_TABLE.sql"
+                "src/database/sql/queries/001_CREATE_INITIAL_SCHEMA.sql",
+                "src/database/sql/queries/002_CREATE_USERS_TABLE.sql",
+                "src/database/sql/queries/003_CREATE_VEHICLES_TABLE.sql",
+                "src/database/sql/queries/004_CREATE_RENTALS_TABLE.sql"
                   ]
 
             for script in seeding_scripts:

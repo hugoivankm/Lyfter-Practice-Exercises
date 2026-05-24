@@ -20,18 +20,19 @@ class UserRepository(BaseRepository):
         username: str,
         password: str,
         birthdate: date,
+        full_name: str,
         account_status: AccountStatus,
     ) -> User | None:
         with self.db.cursor() as cur:
             query: str = """
-            INSERT INTO lyfter_car_rental.users (email, username, password, birthdate, account_status)
+            INSERT INTO lyfter_car_rental.users (email, username, password, birthdate, full_name, account_status)
             VALUES (%s, %s, %s, %s, %s) 
             RETURNING *
             """
 
             cur.execute(
                 query,
-                (email, username, password, birthdate, account_status),
+                (email, username, password, birthdate, full_name, account_status),
             )
             row = cur.fetchone()
             return User.from_row(row)
@@ -40,7 +41,7 @@ class UserRepository(BaseRepository):
         self.db.rollback()
 
         query = """
-            SELECT id, email, username, password, birthdate, account_status 
+            SELECT id, email, username, password, birthdate, full_name, account_status 
             FROM lyfter_car_rental.users 
             WHERE id = %s
         """
@@ -85,7 +86,7 @@ class UserRepository(BaseRepository):
         valid_keys = allowed_keys - forbidden_keys
 
         base_query = """
-            SELECT id, email, username, password, birthdate, account_status
+            SELECT id, email, username, password, birthdate, full_name, account_status
             FROM lyfter_car_rental.users
         """
 

@@ -16,6 +16,7 @@ class User:
     email: str
     username: str
     password: str
+    full_name: str
     birthdate: date
     account_status: AccountStatus
 
@@ -28,8 +29,9 @@ class User:
             email=row[1],
             username=row[2],
             password="********",
-            birthdate=row[4],
-            account_status=AccountStatus(row[5])
+            full_name=row[4],
+            birthdate=row[5],
+            account_status=AccountStatus(row[6])
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -38,6 +40,7 @@ class User:
             "email": self.email,
             "username": self.username,
             "password": self.password,
+            "full_name": self.full_name,
             "birthdate": self.birthdate.isoformat() if self.birthdate else None,
             "account_status": self.account_status.value
         }
