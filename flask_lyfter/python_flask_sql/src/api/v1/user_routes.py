@@ -148,7 +148,7 @@ def delete_user(user_id: int):
     service = UserService(g.db)
     try:
         deleted_user = service.delete(user_id)
-        return json_response(deleted_user, HTTPStatus.NO_CONTENT)
+        return json_response(deleted_user, HTTPStatus.OK)
     except psycopg2.IntegrityError:
         return error_response(
             "conflict with other records while deleting user", HTTPStatus.CONFLICT
