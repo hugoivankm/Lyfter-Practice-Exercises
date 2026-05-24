@@ -1,6 +1,8 @@
-import psycopg2
+
+
 from typing import Any, Optional
 
+import psycopg2
 from psycopg2.extensions import connection as _connection
 
 from .service import BaseService
@@ -90,7 +92,7 @@ class VehicleService(BaseService):
                     f"vehicle with id: {id} does not exist in database"
                 )
             return vehicle.to_dict()
-        except Exception as e:
+        except psycopg2.Error as e:
             print(f"get vehicle error: {e}")
             raise DbRetrievalError("unable to retrieve Vehicle ")
 
