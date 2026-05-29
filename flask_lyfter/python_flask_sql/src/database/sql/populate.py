@@ -182,7 +182,7 @@ if __name__ == "__main__":
             populate_vehicles_table(conn, seed_parameters["vehicle_quantity"])
             populate_rentals_table(conn, seed_parameters["rentals_quantity"])
 
-        print("Successfully added:")
+        print("Successfully added: ")
         print(f"  {seed_parameters['user_quantity']} users")
         print(f"  {seed_parameters['vehicle_quantity']} vehicles")
         print(f"  {seed_parameters['rentals_quantity']} rentals")

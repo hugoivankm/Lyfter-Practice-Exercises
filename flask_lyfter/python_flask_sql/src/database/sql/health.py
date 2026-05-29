@@ -28,9 +28,9 @@ def main():
             with conn.cursor() as cur:
                 cur.execute(query)
             if cur.rowcount == 0:
-                print("DB ERROR. There are no vehicles available")
+                print("DB ERROR. There are no vehicles available.")
                 return
-            print("DB OK. System operating normally")
+            print("DB OK. System operating normally.")
     except psycopg2.Error as pge:
         print(f"DB ERROR. {pge}")
 
