@@ -144,7 +144,7 @@ def delete_vehicle(vehicle_id: int):
     service = VehicleService(g.db)
     try:
         deleted_vehicle = service.delete(vehicle_id)
-        return json_response(deleted_vehicle, HTTPStatus.NO_CONTENT)
+        return json_response(deleted_vehicle, HTTPStatus.OK)
     except psycopg2.IntegrityError:
         return error_response(
             "conflict with other records while deleting vehicle", HTTPStatus.CONFLICT

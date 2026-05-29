@@ -59,11 +59,12 @@ def create_user():
                 data["username"],
                 data["password"],
                 data["birthdate"],
+                data["full_name"],
                 data["account_status"],
             )
         else:
             user_dict = service.register(
-                data["email"], data["username"], data["password"], data["birthdate"]
+                data["email"], data["username"], data["password"], data["full_name"], data["birthdate"]
             )
 
         return json_response(user_dict, HTTPStatus.CREATED)
@@ -147,7 +148,7 @@ def delete_user(user_id: int):
     service = UserService(g.db)
     try:
         deleted_user = service.delete(user_id)
-        return json_response(deleted_user, HTTPStatus.NO_CONTENT)
+        return json_response(deleted_user, HTTPStatus.OK)
     except psycopg2.IntegrityError:
         return error_response(
             "conflict with other records while deleting user", HTTPStatus.CONFLICT

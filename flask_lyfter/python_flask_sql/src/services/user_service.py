@@ -41,6 +41,7 @@ class UserService(BaseService):
         username: str,
         password: str,
         birthdate: date,
+        full_name: str,
         account_status: AccountStatus = AccountStatus.ACTIVE,
     ) -> dict[str, Any]:
         """Registers a brand new user within the system identity platform.
@@ -62,7 +63,7 @@ class UserService(BaseService):
         """
         try:
             new_user: User | None = self.user_repo.create(
-                email, username, password, birthdate, account_status
+                email, username, password, birthdate, full_name, account_status
             )
             if new_user is None:
                 raise UserCreationError("unable to create user")
@@ -118,7 +119,7 @@ class UserService(BaseService):
         try:
             users = self.user_repo.get_all(status)
             if len(users) < 1:
-                raise UserDoesNotExistsError("user vehicle list is empty")
+                return []
 
             results: list[dict[str, Any]] = []
             for user in users:

@@ -4,7 +4,7 @@ from psycopg2.extensions import connection as _connection
 from psycopg2.extensions import TRANSACTION_STATUS_IDLE
 from typing import Optional
 
-from python_flask_sql.api.v1.responses import error_response
+from ...api.v1.responses import error_response
 from ...database.database_manager import DbManager
 
 from . import v1_bp
