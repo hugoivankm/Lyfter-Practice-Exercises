@@ -1,8 +1,9 @@
 from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from ..repositories.address_repository import AddressRepository
-from ..models.address import Address
+from app.repositories.address_repository import AddressRepository
+from app.models.address import Address
+from .user_service import UserService, UserNotFoundError
 
 
 class AddressNotFoundError(Exception):
@@ -18,7 +19,14 @@ class AddressService:
     def register_new_address(
         self, physical_address: str, user_id: int
     ) -> dict[str, Any]:
+        
+        user_service = UserService(self.address_repo.session)
+        user = user_service.get_user_by_id(user_id)
+        print(f"User --> {user}")
 
+        if not user:
+            raise  UserNotFoundError(f"Unable to find user with ID {user_id}")
+        
         new_address = Address(physical_address=physical_address, user_id=user_id)
 
         self.address_repo.create(new_address)
@@ -50,7 +58,7 @@ class AddressService:
 
         return address_dict
 
-    def get_all_addresss(self) -> list[dict[str, Any]]:
+    def get_all_addresses(self) -> list[dict[str, Any]]:
         stmt = select(Address)
 
         addresss = self.address_repo.session.scalars(stmt).all()

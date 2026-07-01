@@ -1,9 +1,11 @@
-from typing import Optional, Any
+from typing import Optional, Any, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Integer, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
-from .user import User
+
+if TYPE_CHECKING:
+    from .user import User
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -17,7 +19,7 @@ class Vehicle(Base):
     vin: Mapped[Optional[str]] = mapped_column(String(17), unique=True)
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     user: Mapped["User"] = relationship(back_populates="vehicles")
 
@@ -37,3 +39,4 @@ class Vehicle(Base):
             "vin": self.vin,
             "user_id": self.user_id
         }
+    

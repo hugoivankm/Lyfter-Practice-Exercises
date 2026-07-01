@@ -1,10 +1,12 @@
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
-from .user import User
+
+if TYPE_CHECKING:
+    from .user import User
 
 
 class Address(Base):

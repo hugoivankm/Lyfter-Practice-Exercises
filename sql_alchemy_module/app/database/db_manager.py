@@ -27,7 +27,7 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def create_tables(self, base: DeclarativeBase) -> None:
+    def create_tables(self, base: type[DeclarativeBase]) -> None:
         base.metadata.create_all(self.engine)
 
     def create_session(self) -> Session:

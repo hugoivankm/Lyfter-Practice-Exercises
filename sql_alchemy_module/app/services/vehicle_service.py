@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.repositories.vehicle_repository import VehicleRepository
@@ -16,11 +16,11 @@ class VehicleService:
         self.vehicles_repo = VehicleRepository(session)
 
     def register_new_vehicle(
-        self, model: str, make: str, year: int, vehicles_id: int, vin: str
+        self, model: str, make: str, year: int, user_id: Optional[int], vin: str
     ) -> dict[str, Any]:
 
         new_vehicle = Vehicle(
-            model=model, make=make, year=year, vehicles_id=vehicles_id, vin=vin
+            model=model, make=make, year=year, user_id=user_id, vin=vin
         )
 
         self.vehicles_repo.create(new_vehicle)
@@ -29,6 +29,11 @@ class VehicleService:
 
         return {
             "id": new_vehicle.id,
+            "model": new_vehicle.model,
+            "make": new_vehicle.make,
+            "year" : new_vehicle.year,
+            "vin": new_vehicle.vin,
+            "user_id": new_vehicle.user_id
         }
 
     def get_vehicle_by_id(self, id: int):
@@ -57,12 +62,12 @@ class VehicleService:
 
         return [vehicle.to_dict() for vehicle in vehicles]
 
-    def update_vehicles(self, vehicles_id: int, data: dict[str, Any]) -> dict[str, Any]:
-        vehicles = self.vehicles_repo.get_by_id(vehicles_id)
+    def update_vehicle(self, vehicle_id: int, data: dict[str, Any]) -> dict[str, Any]:
+        vehicles = self.vehicles_repo.get_by_id(vehicle_id)
 
         if vehicles is None:
             raise VehicleNotFoundError(
-                f"vehicles with ID {vehicles_id} does not exist."
+                f"vehicles with ID {vehicle_id} does not exist."
             )
 
         vehicles.model = str(data.get("model", vehicles.model))

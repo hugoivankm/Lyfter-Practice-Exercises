@@ -35,6 +35,8 @@ class UserService:
     def get_user_by_id(self, id: int):
         user = self.users_repo.get_by_id(id)
 
+        print(f"---> {user}")
+
         if user is None:
             raise UserNotFoundError(f"User with id: {id} not found")
 

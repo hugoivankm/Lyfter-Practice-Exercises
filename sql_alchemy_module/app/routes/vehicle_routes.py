@@ -6,17 +6,16 @@ from app.services.vehicle_service import VehicleNotFoundError
 
 vehicle_bp = Blueprint("vehicles", __name__)
 
-
 @vehicle_bp.route("/", methods=["GET"])
 def get_vehicles():
-    vehicle_service = VehicleService(g.db_manager)
+    vehicle_service = VehicleService(g.db_session)
 
     all_vehicles = vehicle_service.get_all_vehicles()
 
     return jsonify(all_vehicles), 200
 
 
-@vehicle_bp.route("<int:id>", methods=["GET"])
+@vehicle_bp.route("/<int:id>", methods=["GET"])
 def get_vehicle(id: int):
     vehicle_service = VehicleService(g.db_session)
     try:
@@ -30,7 +29,7 @@ def get_vehicle(id: int):
 @vehicle_bp.route("/", methods=["POST"])
 def register_vehicle():
     vehicle_service = VehicleService(g.db_session)
-    required_keys = []
+    required_keys = ["make", "model", "year", "vin"]
 
     try:
         if not request.is_json:
@@ -52,12 +51,18 @@ def register_vehicle():
                 {"error": f"Missing fields in vehicle: {', '.join(missing_params)}"}
             ), 401
 
-        new_vehicle_dict = vehicle_service.register_new_vehicle(
-            full_name=str(payload["full_name"]),
-            email=str(payload["email"]),
-            phone_number=str(payload["phone_number"]),
-        )
+        user_id = payload.get("user_id", None)
+        if user_id:
+            user_id = int(user_id)
 
+        new_vehicle_dict = vehicle_service.register_new_vehicle(
+            model=str(payload["model"]),
+            make=str(payload["make"]),
+            year=int(payload["year"]),
+            vin=str(payload["vin"]),
+            user_id=user_id,
+        )
+        
         return jsonify(new_vehicle_dict), 200
     except Exception as e:
         print(f"error: {e}")
@@ -74,8 +79,8 @@ def delete_vehicle(id: int):
         return jsonify({"error": "vehicle not found"}, 404)
 
 
-@vehicle_bp.route("/<int:id>", method=["PUT"])
-def update_vehicle(id: int):
+@vehicle_bp.route("/<int:id>", methods=["PUT"])
+def updated_vehicle(id: int):
     vehicle_service = VehicleService(g.db_session)
     try:
         if not request.is_json:
@@ -87,9 +92,9 @@ def update_vehicle(id: int):
 
         payload = cast(dict[str, Any], raw_data)
 
-        update_vehicle = vehicle_service.update_vehicle(vehicle_id=id, data=payload)
+        updated_vehicle = vehicle_service.update_vehicle(vehicle_id=id, data=payload)
 
-        return jsonify(update_vehicle), 200
+        return jsonify(updated_vehicle), 200
     except VehicleNotFoundError as e:
         return jsonify({"error": str(e)}), 404
     except Exception:

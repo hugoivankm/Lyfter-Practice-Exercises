@@ -9,14 +9,14 @@ user_bp = Blueprint("users", __name__)
 
 @user_bp.route("/", methods=["GET"])
 def get_users():
-    user_service = UserService(g.db_manager)
+    user_service = UserService(g.db_session)
 
     all_users = user_service.get_all_users()
 
     return jsonify(all_users), 200
 
 
-@user_bp.route("<int:id>", methods=["GET"])
+@user_bp.route("/<int:id>", methods=["GET"])
 def get_user(id: int):
     user_service = UserService(g.db_session)
     try:
@@ -74,7 +74,7 @@ def delete_user(id: int):
         return jsonify({"error": "user not found"}, 404)
 
 
-@user_bp.route("/<int:id>", method=["PUT"])
+@user_bp.route("/<int:id>", methods=["PUT"])
 def update_user(id: int):
     user_service = UserService(g.db_session)
     try:

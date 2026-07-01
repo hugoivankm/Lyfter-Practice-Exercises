@@ -1,36 +1,36 @@
 from flask import Blueprint, jsonify, g, request
 from typing import Any, cast
-from app.services import UserService
-from app.services import UserNotFoundError
+from app.services.address_service import AddressService, AddressNotFoundError
+from app.services.address_service import UserNotFoundError
 
 
-user_bp = Blueprint("users", __name__)
+address_bp = Blueprint("address", __name__)
 
 
-@user_bp.route("/", methods=["GET"])
-def get_users():
-    user_service = UserService(g.db_manager)
+@address_bp.route("/", methods=["GET"])
+def get_addresss():
+    address_service = AddressService(g.db_session)
 
-    all_users = user_service.get_all_users()
+    all_addresses = address_service.get_all_addresses()
 
-    return jsonify(all_users), 200
+    return jsonify(all_addresses), 200
 
 
-@user_bp.route("<int:id>", methods=["GET"])
-def get_user(id: int):
-    user_service = UserService(g.db_session)
+@address_bp.route("/<int:id>", methods=["GET"])
+def get_address(id: int):
+    address_service = AddressService(g.db_session)
     try:
-        user_data = user_service.get_user_by_id(id)
-        return jsonify(user_data), 200
+        address_data = address_service.get_address_by_id(id)
+        return jsonify(address_data), 200
 
-    except UserNotFoundError:
-        return jsonify({"error": f"User with ID {id} not found"}), 404
+    except AddressNotFoundError:
+        return jsonify({"error": f"Address with ID {id} not found"}), 404
 
 
-@user_bp.route("/", methods=["POST"])
-def register_user():
-    user_service = UserService(g.db_session)
-    required_keys = ["full_name", "email", "phone_number"]
+@address_bp.route("/", methods=["POST"])
+def register_address():
+    address_service = AddressService(g.db_session)
+    required_keys = ["physical_address", "user_id"]
 
     try:
         if not request.is_json:
@@ -49,34 +49,35 @@ def register_user():
 
         if missing_params:
             return jsonify(
-                {"error": f"Missing fields in user: {', '.join(missing_params)}"}
+                {"error": f"Missing fields in address: {', '.join(missing_params)}"}
             ), 401
 
-        new_user_dict = user_service.register_new_user(
-            full_name=str(payload["full_name"]),
-            email=str(payload["email"]),
-            phone_number=str(payload["phone_number"]),
+        new_address_dict = address_service.register_new_address(
+            physical_address=str(payload["physical_address"]), user_id=int(payload["user_id"])
         )
 
-        return jsonify(new_user_dict), 200
+        return jsonify(new_address_dict), 200
+    except UserNotFoundError as ue:
+        print(f"error: {ue}")
+        return jsonify({"error": "Unable to find user"})
     except Exception as e:
         print(f"error: {e}")
         return jsonify({"error": "something went wrong"})
 
 
-@user_bp.route("/<int:id>", methods=["DELETE"])
-def delete_user(id: int):
-    user_service = UserService(g.db_session)
+@address_bp.route("/<int:id>", methods=["DELETE"])
+def delete_address(id: int):
+    address_service = AddressService(g.db_session)
     try:
-        delete_user_data = user_service.delete_user_by_id(id)
-        return jsonify(delete_user_data), 200
-    except UserNotFoundError:
-        return jsonify({"error": "user not found"}, 404)
+        delete_address_data = address_service.delete_address_by_id(id)
+        return jsonify(delete_address_data), 200
+    except AddressNotFoundError:
+        return jsonify({"error": "address not found"}, 404)
 
 
-@user_bp.route("/<int:id>", method=["PUT"])
-def update_user(id: int):
-    user_service = UserService(g.db_session)
+@address_bp.route("/<int:id>", methods=["PUT"])
+def update_address(id: int):
+    address_service = AddressService(g.db_session)
     try:
         if not request.is_json:
             return jsonify({"error": "Content-Type must be application/json"}), 400
@@ -87,10 +88,10 @@ def update_user(id: int):
 
         payload = cast(dict[str, Any], raw_data)
 
-        update_user = user_service.update_user(user_id=id, data=payload)
+        updated_address = address_service.update_address(address_id=id, data=payload)
 
-        return jsonify(update_user), 200
-    except UserNotFoundError as e:
+        return jsonify(updated_address), 200
+    except AddressNotFoundError as e:
         return jsonify({"error": str(e)}), 404
     except Exception:
         return jsonify({"error": "something went wrong"}), 500
