@@ -89,9 +89,40 @@ Lyfter-Practice-Exercises
 │       │   └── __init__.py
 │       ├── __init__.py
 │       └── main.py
+├── sql_alchemy_module
+│   ├── app
+│   │   ├── database
+│   │   │   ├── __init__.py
+│   │   │   ├── db_manager.py
+│   │   │   └── seed_db.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── address.py
+│   │   │   ├── model.py
+│   │   │   ├── user.py
+│   │   │   └── vehicle.py
+│   │   ├── repositories
+│   │   │   ├── __init__.py
+│   │   │   ├── address_repository.py
+│   │   │   ├── user_repository.py
+│   │   │   └── vehicle_repository.py
+│   │   ├── routes
+│   │   │   ├── __init__.py
+│   │   │   ├── address_routes.py
+│   │   │   ├── user_routes.py
+│   │   │   └── vehicle_routes.py
+│   │   ├── services
+│   │   │   ├── __init__.py
+│   │   │   ├── address_service.py
+│   │   │   ├── user_service.py
+│   │   │   └── vehicle_service.py
+│   │   └── app.py
+│   ├── pyproject.toml
+│   ├── run.py
+│   └── sql_alchemy_project.md
 ├── README.md
-├── main.py
 ├── pyproject.toml
+├── run.py
 └── uv.lock
 ```
 
