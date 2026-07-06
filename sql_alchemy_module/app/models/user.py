@@ -33,10 +33,23 @@ class User(Base):
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, full_name={self.full_name!r}, email={self.email!r}, phone_number={self.phone_number!r})"
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, view: str = "compact") -> dict[str, Any]:
+
+          # extended view
+        if view == "extended":
+            return {
+                "id": self.id,
+                "full_name": self.full_name,
+                "email": self.email,
+                "phone_number": self.phone_number,
+                "addreses": [address.to_dict() for address in self.addresses],
+                "vehicles": [vehicle.to_dict() for vehicle in self.vehicles],
+            }
+
+        # compact view
         return {
             "id": self.id,
             "full_name": self.full_name,
             "email": self.email,
-            "phone_number": self.phone_number
+            "phone_number": self.phone_number,
         }

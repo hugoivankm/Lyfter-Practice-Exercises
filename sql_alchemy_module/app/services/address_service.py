@@ -22,7 +22,6 @@ class AddressService:
         
         user_service = UserService(self.address_repo.session)
         user = user_service.get_user_by_id(user_id)
-        print(f"User --> {user}")
 
         if not user:
             raise  UserNotFoundError(f"Unable to find user with ID {user_id}")
@@ -46,6 +45,14 @@ class AddressService:
             raise AddressNotFoundError(f"Address with id: {id} not found")
 
         return address.to_dict()
+    
+    def get_address_with_phrase(self, phrase: str) -> list[dict[str, Any]]:
+        addresses = self.address_repo.get_by_address_phrase(phrase)
+
+        if addresses is None:
+            return []
+
+        return [address.to_dict() for address in addresses]
 
     def delete_address_by_id(self, id: int):
         address = self.address_repo.get_by_id(id)

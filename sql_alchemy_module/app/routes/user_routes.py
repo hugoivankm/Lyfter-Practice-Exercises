@@ -10,8 +10,11 @@ user_bp = Blueprint("users", __name__)
 @user_bp.route("/", methods=["GET"])
 def get_users():
     user_service = UserService(g.db_session)
+    filter = request.args.get("filter")
+    if filter:
+        filter = filter.lower()
 
-    all_users = user_service.get_all_users()
+    all_users = user_service.get_all_users(filter)
 
     return jsonify(all_users), 200
 
@@ -20,11 +23,13 @@ def get_users():
 def get_user(id: int):
     user_service = UserService(g.db_session)
     try:
-        user_data = user_service.get_user_by_id(id)
+        view_param = request.args.get("view", "compact").lower()
+        user_data = user_service.get_user_by_id(id, view_param)
         return jsonify(user_data), 200
 
     except UserNotFoundError:
         return jsonify({"error": f"User with ID {id} not found"}), 404
+
 
 
 @user_bp.route("/", methods=["POST"])

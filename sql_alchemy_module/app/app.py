@@ -1,12 +1,18 @@
 from flask import Flask, g
 from app.routes import v1_bp
 from .database.db_manager import DatabaseManager
+from flask.json.provider import DefaultJSONProvider
 
 
 app = Flask(__name__)
 db_manager: DatabaseManager = DatabaseManager(
     "postgresql://postgres:postgres@localhost/postgres?options=-csearch_path=sql_alchemy_module"
 )
+
+class UnsortedJSONProvider(DefaultJSONProvider):
+    sort_keys = False
+
+app.json = UnsortedJSONProvider(app)
 
 app.register_blueprint(v1_bp, url_prefix='/api/v1')
 

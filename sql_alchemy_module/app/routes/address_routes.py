@@ -11,6 +11,11 @@ address_bp = Blueprint("address", __name__)
 def get_addresss():
     address_service = AddressService(g.db_session)
 
+    filter_phrase = request.args.get("phrase")
+    if filter_phrase:
+        all_addresses = address_service.get_address_with_phrase(filter_phrase)
+        return jsonify(all_addresses), 200
+
     all_addresses = address_service.get_all_addresses()
 
     return jsonify(all_addresses), 200
@@ -53,7 +58,8 @@ def register_address():
             ), 401
 
         new_address_dict = address_service.register_new_address(
-            physical_address=str(payload["physical_address"]), user_id=int(payload["user_id"])
+            physical_address=str(payload["physical_address"]),
+            user_id=int(payload["user_id"]),
         )
 
         return jsonify(new_address_dict), 200
