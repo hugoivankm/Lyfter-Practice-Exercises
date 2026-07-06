@@ -172,9 +172,9 @@ def populate_rentals_table(conn: connection, quantity: int = 1):
 if __name__ == "__main__":
     try:
         seed_parameters = {
-            "user_quantity": 10,
-            "vehicle_quantity": 5,
-            "rentals_quantity": 10,
+            "user_quantity": 200,
+            "vehicle_quantity": 200,
+            "rentals_quantity": random.randint(50, 150),
         }
 
         with psycopg2.connect(**DB_CONFIG) as conn:
