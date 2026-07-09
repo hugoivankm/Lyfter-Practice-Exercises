@@ -36,7 +36,7 @@ def get_user(id: int):
 def register_user():
     user_service = UserService(g.db_session)
     required_keys = ["full_name", "email", "phone_number"]
-
+    
     try:
         if not request.is_json:
             return jsonify({"error": "Content-Type must be application/json"}), 400
@@ -66,7 +66,7 @@ def register_user():
         return jsonify(new_user_dict), 200
     except Exception as e:
         print(f"error: {e}")
-        return jsonify({"error": "something went wrong"})
+        return jsonify({"error": "something went wrong"}), 500
 
 
 @user_bp.route("/<int:id>", methods=["DELETE"])
@@ -76,7 +76,7 @@ def delete_user(id: int):
         delete_user_data = user_service.delete_user_by_id(id)
         return jsonify(delete_user_data), 200
     except UserNotFoundError:
-        return jsonify({"error": "user not found"}, 404)
+        return jsonify({"error": "user not found"}), 404
 
 
 @user_bp.route("/<int:id>", methods=["PUT"])

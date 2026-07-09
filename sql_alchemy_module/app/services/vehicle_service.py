@@ -55,24 +55,30 @@ class VehicleService:
 
         return vehicle_dict
 
-    def get_all_vehicles(self) -> list[dict[str, Any]]:
-        stmt = select(Vehicle)
-
-        vehicles = self.vehicles_repo.session.scalars(stmt).all()
+    def get_all_vehicles(self, filter: Optional[str]) -> list[dict[str, Any]]:
+        if filter == "no_user":
+            vehicles =  self.vehicles_repo.get_by_no_user()
+        else:
+            stmt = select(Vehicle)
+            vehicles = self.vehicles_repo.session.scalars(stmt).all()
 
         return [vehicle.to_dict() for vehicle in vehicles]
 
     def update_vehicle(self, vehicle_id: int, data: dict[str, Any]) -> dict[str, Any]:
-        vehicles = self.vehicles_repo.get_by_id(vehicle_id)
+        vehicle = self.vehicles_repo.get_by_id(vehicle_id)
 
-        if vehicles is None:
+        if vehicle is None:
             raise VehicleNotFoundError(
                 f"vehicles with ID {vehicle_id} does not exist."
             )
 
-        vehicles.model = str(data.get("model", vehicles.model))
-        vehicles.make = str(data.get("make", vehicles.make))
-        vehicles.year = int(data.get("year", vehicles.year))
+        vehicle.model = str(data.get("model", vehicle.model))
+        vehicle.make = str(data.get("make", vehicle.make))
+        vehicle.year = int(data.get("year", vehicle.year))
+        if data.get("user_id", vehicle.user_id): 
+            vehicle.user_id = int(data.get("user_id", vehicle.user_id))
 
-        self.vehicles_repo.save(vehicles)
-        return vehicles.to_dict()
+        self.vehicles_repo.save(vehicle)
+        return vehicle.to_dict()
+    
+
