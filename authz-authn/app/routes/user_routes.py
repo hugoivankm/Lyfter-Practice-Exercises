@@ -1,36 +1,44 @@
-from flask import Blueprint, request, Response, jsonify
-from app.services.user_service import UserService
+from flask import Blueprint, request, Response, jsonify, g, current_app
+from app.services import UserService
+from app.utils.decorators import login_required
 
-def create_user_routes(service: UserService) -> Blueprint:
-    user_bp = Blueprint("user", __name__)
+user_bp = Blueprint("users", __name__)
 
-    @user_bp.route("/register", methods=["POST"])
-    def register(): # type: ignore[reportUnusedFunction]
-        data = request.get_json()
-        if not data or not data.get("username") or not data.get("password"):
-            return Response(status=400)
-        token = service.register(data["username"], data["password"])
-        return jsonify(token=token)
+@user_bp.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    if not data or not data.get("username") or not data.get("password"):
+        return Response(status=400)
 
-    @user_bp.route("/login", methods=["POST"])
-    def login(): # type: ignore[reportUnusedFunction]
-        data = request.get_json()
-        if not data or not data.get("username") or not data.get("password"):
-            return Response(status=400)
-        token = service.login(data["username"], data["password"])
-        if not token:
-            return Response(status=403)
-        return jsonify(token=token)
+    jwt = current_app.extensions["jwt_manager"]
+    user_service = UserService(g.db_session, jwt)
 
-    @user_bp.route("/me")
-    def me(): # type: ignore[reportUnusedFunction]
-        token = request.headers.get("Authorization")
-        if not token:
-            return Response(status=403)
-        token = token.replace("Bearer ", "")
-        user = service.get_user_from_token(token)
-        if not user:
-            return Response(status=403)
-        return jsonify(user.to_dict())
+    token = user_service.register(data["username"], data["password"])
+    return jsonify(token=token)
 
-    return user_bp
+@user_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    if not data or not data.get("username") or not data.get("password"):
+        return Response(status=400)
+
+    jwt = current_app.extensions["jwt_manager"]
+    user_service = UserService(g.db_session, jwt)
+
+    token = user_service.login(data["username"], data["password"])
+    if not token:
+        return Response(status=401)
+    return jsonify(token=token)
+
+@user_bp.route("/me", methods=["GET"]) 
+@login_required
+def me():
+    jwt = current_app.extensions["jwt_manager"]
+    user_service = UserService(g.db_session, jwt)
+
+    user = user_service.get_by_id(g.current_user_id)
+
+    if not user:
+        return Response(status=401)
+
+    return jsonify(user.to_dict())

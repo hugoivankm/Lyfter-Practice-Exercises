@@ -1,26 +1,22 @@
-from app.models.user import User
-from app.database.db_manager import DatabaseManager
-
+from app.models import User
+from sqlalchemy.orm import Session
 
 class UserRepository:
-    def __init__(self, db: DatabaseManager):
-        self.db = db
+    def __init__(self, session: Session):
+        self.session = session
 
     def create_user(self, username: str, password: str) -> User:
-        with self.db.session() as session:
-            user = User(username=username, password=password)
-            session.add(user)
-            session.flush()  # ensure buffer gets flushed in time
-            return user
+        user = User(username=username, password=password)
+        self.session.add(user)
+        self.session.flush() 
+        return user
 
     def find_user(self, username: str, password: str) -> User | None:
-        with self.db.session() as session:
-            return (
-                session.query(User)
-                .filter(User.username == username, User.password == password)
-                .first()
-            )
+        return (
+            self.session.query(User)
+            .filter(User.username == username, User.password == password)
+            .first()
+        )
 
     def find_user_by_id(self, user_id: int) -> User | None:
-        with self.db.session() as session:
-            return session.query(User).filter(User.id == user_id).first()
+        return self.session.get(User, user_id)

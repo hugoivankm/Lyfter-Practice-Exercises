@@ -1,11 +1,12 @@
-from app.repositories.user_repository import UserRepository
+from sqlalchemy.orm import Session
 from app.utils.jwt_utils import JWT_Manager
 from app.models.user import User
+from app.repositories import UserRepository
 
 
 class UserService:
-    def __init__(self, repo: UserRepository, jwt: JWT_Manager):
-        self.repo = repo
+    def __init__(self, session: Session, jwt: JWT_Manager):
+        self.repo = UserRepository(session)
         self.jwt = jwt
 
     def register(self, username: str, password: str) -> str | None:
@@ -18,8 +19,5 @@ class UserService:
             return None
         return self.jwt.encode({"id": user.id})
 
-    def get_user_from_token(self, token: str) -> User | None:
-        decoded = self.jwt.decode(token)
-        if not decoded:
-            return None
-        return self.repo.find_user_by_id(decoded["id"])
+    def get_by_id(self, id: int) -> User | None:
+        return self.repo.find_user_by_id(id)

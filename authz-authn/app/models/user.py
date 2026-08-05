@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, List, TYPE_CHECKING
 from sqlalchemy import String, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
-
+if TYPE_CHECKING:
+    from .invoice import Invoice
 
 class User(Base):
     __tablename__ = "users"
@@ -15,6 +16,8 @@ class User(Base):
     )
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    invoices: Mapped[List["Invoice"]] = relationship("Invoice", back_populates="user")
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, username={self.username}, password={'********'})"
