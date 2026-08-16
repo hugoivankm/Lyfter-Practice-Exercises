@@ -1,12 +1,13 @@
 from flask import Blueprint, jsonify, g, request
 from typing import cast, Any
 from app.services import InvoiceService
-from app.utils.decorators import login_required
+from app.utils.decorators import admin_required
 
 invoice_bp = Blueprint("invoices", __name__)
 
-@invoice_bp.route("/create", methods=["POST"])
-@login_required
+
+@invoice_bp.route("/buy", methods=["POST"])
+@admin_required
 def create_invoice():
     if not request.is_json:
         return jsonify({"error": "Content-Type must be application/json"}), 400
@@ -34,10 +35,7 @@ def create_invoice():
 
         invoice_service = InvoiceService(g.db_session)
 
-        new_invoice = invoice_service.create(
-            user_id = user_id,
-            items=details
-        )
+        new_invoice = invoice_service.create(user_id=user_id, items=details)
 
         return jsonify(new_invoice), 201
 
@@ -49,28 +47,49 @@ def create_invoice():
 
 
 @invoice_bp.route("/", methods=["GET"])
-@login_required
+@admin_required
 def list_invoices():
     try:
         invoice_service = InvoiceService(g.db_session)
-        invoices = invoice_service.get_all()
+        user_id = request.args.get("user_id", type=int)
+
+        if user_id is not None:
+            invoices = invoice_service.get_by_user_id(user_id)
+        else:
+            invoices = invoice_service.get_all()
+
         if invoices is None:
             invoices = []
+
         return jsonify(invoices), 200
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
 
 
+@invoice_bp.route("/<int:id>", methods=["GET"])
+@admin_required
+def get_invoice_by_id(id: int):
+    try:
+        invoice_service = InvoiceService(g.db_session)
+        retrieved_invoice = invoice_service.get_by_id(id)
+        if not retrieved_invoice:
+            raise Exception("Unable to retrieve invoices")
+        return jsonify(retrieved_invoice), 200
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Something went wrong"}), 500
+
+
 @invoice_bp.route("/<int:id>", methods=["DELETE"])
-@login_required
+@admin_required
 def delete_invoice(id: int):
-   try:
-    invoice_service = InvoiceService(g.db_session)
-    deleted_invoice = invoice_service.delete(id)
-    if not deleted_invoice:
-        raise Exception("Unable to delete invoice")
-    return deleted_invoice
-   except Exception as ex:
-       print(ex)
-       return jsonify({"error": "Something went wrong"}), 500 
+    try:
+        invoice_service = InvoiceService(g.db_session)
+        deleted_invoice = invoice_service.delete(id)
+        if not deleted_invoice:
+            raise Exception("Unable to delete invoice")
+        return jsonify(deleted_invoice), 200
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Something went wrong"}), 500

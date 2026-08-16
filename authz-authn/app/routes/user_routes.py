@@ -1,10 +1,12 @@
 from flask import Blueprint, request, Response, jsonify, g, current_app
 from app.services import UserService
 from app.utils.decorators import login_required
+from app.utils.decorators import admin_required
 
 user_bp = Blueprint("users", __name__)
 
 @user_bp.route("/register", methods=["POST"])
+@admin_required
 def register():
     data = request.get_json()
     if not data or not data.get("username") or not data.get("password"):

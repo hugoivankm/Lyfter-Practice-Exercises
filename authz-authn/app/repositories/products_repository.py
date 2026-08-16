@@ -17,6 +17,10 @@ class ProductRepository:
     def find_product(self, name: str) -> Product | None:
         return self.session.query(Product).filter(Product.name == name).first()
 
+    def find_product_by_id_and_update(self, product_id: int) -> Product | None:
+        stmt = select(Product).where(Product.id == product_id).with_for_update()
+        return self.session.scalars(stmt).first()
+
     def get_products(self) -> List[Product] | None:
         stmt: Select[tuple[Product]] = select(Product)
         products = list(self.session.scalars(stmt).all())
@@ -45,3 +49,4 @@ class ProductRepository:
         self.session.delete(product)
         self.session.flush()
         return product
+

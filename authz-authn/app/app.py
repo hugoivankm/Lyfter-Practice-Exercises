@@ -1,9 +1,65 @@
+from typing import Any
 from flask import Flask, g
 from flask.json.provider import DefaultJSONProvider
 from app.database.db_manager import DatabaseManager
 from app.utils.jwt_utils import JWT_Manager
-from app.models.model import Base
-from app.routes import user_bp, product_bp, invoice_bp
+from app.models import Base
+from app.models import User
+from app.models import Product
+from app.routes import user_bp, product_bp, invoice_bp, order_bp
+
+
+def seed_demo_admin(db_manager: DatabaseManager) -> None:
+    session = db_manager.create_session()
+    try:
+        admin = session.query(User).filter_by(username="admin").first()
+        if not admin:
+            demo_admin = User(
+                username="admin",
+                password="admin",
+                role="admin",
+            )
+            session.add(demo_admin)
+            session.commit()
+            print("Initial admin user created")
+    except Exception as e:
+        session.rollback()
+        print(f"Failed to seed demo admin: {e}")
+    finally:
+        session.close()
+
+
+def seed_demo_products(db_manager: DatabaseManager) -> None:
+    session = db_manager.create_session()
+    fruits:list[dict[str, Any]] = [
+        {"name": "Apple", "price": 1.50, "quantity": 100},
+        {"name": "Banana", "price": 0.75, "quantity": 150},
+        {"name": "Orange", "price": 1.25, "quantity": 80},
+        {"name": "Strawberry", "price": 3.99, "quantity": 50},
+        {"name": "Watermelon", "price": 5.50, "quantity": 25},
+    ]
+
+    try:
+        added_count = 0
+        for fruit in fruits:
+            existing = session.query(Product).filter_by(name=fruit["name"]).first()
+            if not existing:
+                product = Product(
+                    name=fruit["name"],
+                    price=fruit["price"],
+                    quantity=fruit["quantity"],
+                )
+                session.add(product)
+                added_count += 1
+
+        if added_count > 0:
+            session.commit()
+            print("Successfully seeded products")
+    except Exception as e:
+        session.rollback()
+        print(f"Failed to seed fruit products: {e}")
+    finally:
+        session.close()
 
 
 def create_app() -> Flask:
@@ -12,14 +68,19 @@ def create_app() -> Flask:
     db_manager = DatabaseManager(
         "postgresql://postgres:postgres@localhost/postgres?options=-csearch_path=authz-authn"
     )
+
     db_manager.create_tables(Base)
 
-    jwt = JWT_Manager(secret="FWWGKXAM9Q61J8WS2SGAIXKMOKYS3QKV", algorithm="HS256")
+    seed_demo_admin(db_manager)
+    seed_demo_products(db_manager)
+
+    jwt = JWT_Manager(algorithm="RS256")
     app.extensions["jwt_manager"] = jwt  
 
     app.register_blueprint(user_bp, url_prefix="/users")
     app.register_blueprint(product_bp, url_prefix="/products")
     app.register_blueprint(invoice_bp, url_prefix="/invoices")
+    app.register_blueprint(order_bp, url_prefix="/orders")
 
     @app.route("/liveness")
     def liveness():

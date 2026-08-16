@@ -1,0 +1,565 @@
+openapi: 3.0.3
+info:
+  title: Lyfter JWT
+  description: API specification generated from Flask blueprints for User, Product, Invoice, and Order services.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  # ==========================================
+  # USER ROUTES (/users)
+  # ==========================================
+  /users/register:
+    post:
+      summary: Register a new user
+      description: Requires admin privileges.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuthRequest'
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          description: Missing required fields (username or password)
+        '401':
+          description: Unauthorized or admin access required
+
+  /users/login:
+    post:
+      summary: Authenticate user
+      description: Logs in a user and returns a JWT token.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuthRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          description: Missing required fields
+        '401':
+          description: Invalid username or password
+
+  /users/me:
+    get:
+      summary: Get current authenticated user details
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Invalid or expired token
+
+  # ==========================================
+  # PRODUCT ROUTES (/products)
+  # ==========================================
+  /products/create:
+    post:
+      summary: Register a new product
+      description: Requires admin privileges.
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid JSON, missing parameters, or invalid field values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/:
+    get:
+      summary: List all products
+      description: Requires active user session.
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{id}:
+    put:
+      summary: Update product price and quantity
+      description: Requires admin privileges.
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique product ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid JSON or parameter validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error or update failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a product by ID
+      description: Requires admin privileges.
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique product ID
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '500':
+          description: Unable to delete product or internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==========================================
+  # INVOICE ROUTES (/invoices)
+  # ==========================================
+  /invoices/buy:
+    post:
+      summary: Create a new invoice
+      description: Requires admin privileges.
+      tags:
+        - Invoices
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreateRequest'
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Missing or invalid payload attributes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /invoices/:
+    get:
+      summary: Retrieve invoices
+      description: Retrieve all invoices or filter by user ID using query parameters. Requires admin privileges.
+      tags:
+        - Invoices
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user_id
+          required: false
+          schema:
+            type: integer
+          description: Filter invoices by a specific user ID
+      responses:
+        '200':
+          description: List of invoices (filtered or unfiltered)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Invoices not found for the specified criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/{id}:
+    get:
+      summary: Get invoice by ID
+      description: Requires admin privileges.
+      tags:
+        - Invoices
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique invoice ID
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '500':
+          description: Unable to retrieve invoice or internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete an invoice by ID
+      description: Requires admin privileges.
+      tags:
+        - Invoices
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique invoice ID
+      responses:
+        '200':
+          description: Invoice deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '500':
+          description: Unable to delete invoice or internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==========================================
+  # ORDER ROUTES (/orders)
+  # ==========================================
+  /orders/process:
+    post:
+      summary: Process a purchase order
+      description: Executes purchase validations, inventory deductions, and billing. Requires admin privileges.
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderProcessRequest'
+      responses:
+        '201':
+          description: Purchase order processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Invalid JSON format or missing payload keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Business logic error (e.g. insufficient inventory)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal server processing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+# ==========================================
+# COMPONENTS & SCHEMAS
+# ==========================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserAuthRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: john_doe
+        password:
+          type: string
+          format: password
+          example: securepassword123
+
+    AuthTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: john_doe
+
+    ProductCreateRequest:
+      type: object
+      required:
+        - name
+        - price
+        - entry_date
+        - quantity
+      properties:
+        name:
+          type: string
+          example: Wireless Mouse
+        price:
+          type: number
+          format: float
+          example: 29.99
+        entry_date:
+          type: string
+          format: date
+          example: "2026-08-11"
+        quantity:
+          type: integer
+          example: 150
+
+    ProductUpdateRequest:
+      type: object
+      required:
+        - price
+        - quantity
+      properties:
+        price:
+          type: number
+          format: float
+          example: 24.99
+        quantity:
+          type: integer
+          example: 120
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        name:
+          type: string
+          example: Wireless Mouse
+        price:
+          type: number
+          format: float
+          example: 29.99
+        quantity:
+          type: integer
+          example: 150
+
+    OrderItem:
+      type: object
+      required:
+        - product_id
+        - quantity
+      properties:
+        product_id:
+          type: integer
+          example: 2
+        quantity:
+          type: integer
+          example: 2
+
+    OrderProcessRequest:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    InvoiceCreateRequest:
+      type: object
+      required:
+        - user_id
+        - items
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    InvoiceDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 101
+        quantity:
+          type: integer
+          example: 2
+        unit_price:
+          type: number
+          format: float
+          example: 29.99
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5001
+        user_id:
+          type: integer
+          example: 1
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceDetail'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Something went wrong
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Order failed business validation
+        reasons:
+          type: array
+          items:
+            type: string
+          example: ["Product 101 out of stock"]

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, List, TYPE_CHECKING
-from sqlalchemy import String, DateTime, func
+from sqlalchemy import String, DateTime, Enum, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
@@ -16,6 +16,8 @@ class User(Base):
     )
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(64), nullable=False)
+    role = mapped_column(Enum("admin", "standard", name="user_role"))
+
 
     invoices: Mapped[List["Invoice"]] = relationship("Invoice", back_populates="user")
 
@@ -25,6 +27,7 @@ class User(Base):
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
+            "role": self.role,
             "username": self.username,
-            "password": "********"
+            "password": "********",
         }

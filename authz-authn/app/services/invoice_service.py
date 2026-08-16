@@ -19,6 +19,12 @@ class InvoiceService:
             return None
         return invoice.to_dict()
 
+    def get_by_user_id(self, user_id: int) -> List[Dict[str, Any]] | None:
+        invoices = self.repo.get_invoices_by_user(user_id)
+        if not invoices:
+            return None
+        return [invoice.to_dict() for invoice in invoices]
+
     def get_all(self) -> List[Dict[str, Any]] | None:
         invoices = self.repo.get_invoices()
         if not invoices:

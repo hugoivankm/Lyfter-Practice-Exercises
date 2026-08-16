@@ -29,7 +29,20 @@ def login_required[F: Callable[..., Any]](f: F) -> F:
             return jsonify({"error": "Invalid or expired token"}), 401
     
         g.current_user_id = payload.get("id")
+        g.current_user_role = payload.get("role")
+
 
         return f(*args, **kwargs)
 
     return cast(F, wrapper)
+
+def admin_required[F: Callable[..., Any]](f: F) -> F:
+    @login_required
+    @wraps(f)
+    def wrapper(*args: Any, **kwargs: Any):
+        if getattr(g, "current_user_role", None) != "admin":
+            return jsonify({"error": "Unauthorized"}), 403
+        return f(*args, **kwargs)
+
+    return cast(F, wrapper)
+

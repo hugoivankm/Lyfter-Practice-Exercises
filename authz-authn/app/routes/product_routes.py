@@ -2,12 +2,13 @@ from flask import Blueprint, jsonify, g, request
 from typing import cast, Any
 from app.services import ProductService
 from app.utils.decorators import login_required
+from app.utils.decorators import admin_required
 
 product_bp = Blueprint("products", __name__)
 
 
 @product_bp.route("/create", methods=["POST"])
-@login_required
+@admin_required
 def create_product():
     if not request.is_json:
         return jsonify({"error": "Content-Type must be application/json"}), 400
@@ -19,7 +20,7 @@ def create_product():
         ), 400
 
     payload = cast(dict[str, Any], raw_data)
-    required_keys = ["name", "price", "entry_date", "quantity"]
+    required_keys = ["name", "price", "quantity"]
 
     missing_params: list[str] = [
         field for field in required_keys if field not in payload
@@ -60,6 +61,7 @@ def create_product():
 
 
 @product_bp.route("/", methods=["GET"])
+@login_required
 def list_products():
     try:
         product_service = ProductService(g.db_session)
@@ -71,7 +73,7 @@ def list_products():
 
 
 @product_bp.route("/<int:int>", methods=["PUT"])
-@login_required
+@admin_required
 def update_product(id: int):
     try:
         if not request.is_json:
@@ -115,7 +117,7 @@ def update_product(id: int):
         return jsonify({"error": "Something went wrong"}), 500
 
 @product_bp.route("/<int:id>", methods=["DELETE"])
-@login_required
+@admin_required
 def delete_product(id: int):
    try:
     product_service = ProductService(g.db_session)

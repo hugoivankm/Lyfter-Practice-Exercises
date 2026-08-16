@@ -5,8 +5,8 @@ class UserRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_user(self, username: str, password: str) -> User:
-        user = User(username=username, password=password)
+    def create_user(self, username: str, password: str, role: str) -> User:
+        user = User(username=username, password=password, role=role)
         self.session.add(user)
         self.session.flush() 
         return user
