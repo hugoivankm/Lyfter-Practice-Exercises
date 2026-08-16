@@ -65,10 +65,10 @@ def register_address():
         return jsonify(new_address_dict), 200
     except UserNotFoundError as ue:
         print(f"error: {ue}")
-        return jsonify({"error": "Unable to find user"})
+        return jsonify({"error": "Unable to find user"}), 404
     except Exception as e:
         print(f"error: {e}")
-        return jsonify({"error": "something went wrong"})
+        return jsonify({"error": "something went wrong"}), 500
 
 
 @address_bp.route("/<int:id>", methods=["DELETE"])
@@ -78,7 +78,7 @@ def delete_address(id: int):
         delete_address_data = address_service.delete_address_by_id(id)
         return jsonify(delete_address_data), 200
     except AddressNotFoundError:
-        return jsonify({"error": "address not found"}, 404)
+        return jsonify({"error": "address not found"}), 404
 
 
 @address_bp.route("/<int:id>", methods=["PUT"])

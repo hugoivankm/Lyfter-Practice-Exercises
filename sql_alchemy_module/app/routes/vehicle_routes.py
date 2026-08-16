@@ -10,7 +10,11 @@ vehicle_bp = Blueprint("vehicles", __name__)
 def get_vehicles():
     vehicle_service = VehicleService(g.db_session)
 
-    all_vehicles = vehicle_service.get_all_vehicles()
+    filter = request.args.get("filter")
+    if filter:
+        filter = filter.lower()
+
+    all_vehicles = vehicle_service.get_all_vehicles(filter)
 
     return jsonify(all_vehicles), 200
 
@@ -66,7 +70,7 @@ def register_vehicle():
         return jsonify(new_vehicle_dict), 200
     except Exception as e:
         print(f"error: {e}")
-        return jsonify({"error": "something went wrong"})
+        return jsonify({"error": "something went wrong"}), 500
 
 
 @vehicle_bp.route("/<int:id>", methods=["DELETE"])
@@ -76,7 +80,7 @@ def delete_vehicle(id: int):
         delete_vehicle_data = vehicle_service.delete_vehicle_by_id(id)
         return jsonify(delete_vehicle_data), 200
     except VehicleNotFoundError:
-        return jsonify({"error": "vehicle not found"}, 404)
+        return jsonify({"error": "vehicle not found"}), 404
 
 
 @vehicle_bp.route("/<int:id>", methods=["PUT"])
@@ -97,5 +101,6 @@ def updated_vehicle(id: int):
         return jsonify(updated_vehicle), 200
     except VehicleNotFoundError as e:
         return jsonify({"error": str(e)}), 404
-    except Exception:
+    except Exception as ex:
+        print(ex)
         return jsonify({"error": "something went wrong"}), 500

@@ -26,16 +26,14 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
 
-    vehicles: Mapped[List["Vehicle"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
+    vehicles: Mapped[List["Vehicle"]] = relationship(back_populates="user")
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, full_name={self.full_name!r}, email={self.email!r}, phone_number={self.phone_number!r})"
 
     def to_dict(self, view: str = "compact") -> dict[str, Any]:
 
-          # extended view
+        # extended view
         if view == "extended":
             return {
                 "id": self.id,
