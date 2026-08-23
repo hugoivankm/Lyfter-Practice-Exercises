@@ -9,12 +9,15 @@ db_manager: DatabaseManager = DatabaseManager(
     "postgresql://postgres:postgres@localhost/postgres?options=-csearch_path=sql_alchemy_module"
 )
 
+
 class UnsortedJSONProvider(DefaultJSONProvider):
     sort_keys = False
 
+
 app.json = UnsortedJSONProvider(app)
 
-app.register_blueprint(v1_bp, url_prefix='/api/v1')
+app.register_blueprint(v1_bp, url_prefix="/api/v1")
+
 
 @app.before_request
 def create_db_session():

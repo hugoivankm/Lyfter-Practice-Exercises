@@ -31,12 +31,11 @@ def get_user(id: int):
         return jsonify({"error": f"User with ID {id} not found"}), 404
 
 
-
 @user_bp.route("/", methods=["POST"])
 def register_user():
     user_service = UserService(g.db_session)
     required_keys = ["full_name", "email", "phone_number"]
-    
+
     try:
         if not request.is_json:
             return jsonify({"error": "Content-Type must be application/json"}), 400

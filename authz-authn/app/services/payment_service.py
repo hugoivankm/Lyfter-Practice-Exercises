@@ -2,6 +2,7 @@ import time
 import uuid
 from typing import Tuple
 
+
 class PaymentService:
     @staticmethod
     def process_payment(amount: float, card_number: str) -> Tuple[bool, str]:
@@ -22,4 +23,3 @@ class PaymentService:
 
         transaction_id = f"txn_{uuid.uuid4().hex[:12]}"
         return True, transaction_id
-                               

@@ -22,16 +22,15 @@ def process():
             return jsonify({"error": "Missing or empty 'items' list"}), 400
 
         purchase_service = PurchaseService(g.db_session)
-        result = purchase_service.process(
-            g.current_user_id,
-            items=items
-        )
+        result = purchase_service.process(g.current_user_id, items=items)
 
         if result is None:
-            return jsonify({
-                "error": "Order failed business validation",
-                "reasons": ["Product out of stock"]
-            }), 422
+            return jsonify(
+                {
+                    "error": "Order failed business validation",
+                    "reasons": ["Product out of stock"],
+                }
+            ), 422
 
         return jsonify(result), 201
 

@@ -4,8 +4,11 @@ from sqlalchemy import String, DateTime, Enum, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
+
 if TYPE_CHECKING:
     from .invoice import Invoice
+    from .contacts import Contact
+
 
 class User(Base):
     __tablename__ = "users"
@@ -15,11 +18,11 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    password: Mapped[str] = mapped_column(String(64), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
     role = mapped_column(Enum("admin", "standard", name="user_role"))
 
-
     invoices: Mapped[List["Invoice"]] = relationship("Invoice", back_populates="user")
+    contacts: Mapped[List["Contact"]] = relationship("Contact", back_populates="user")
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, username={self.username}, password={'********'})"

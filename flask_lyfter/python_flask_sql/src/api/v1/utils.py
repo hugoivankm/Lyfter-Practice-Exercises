@@ -15,13 +15,12 @@ from ..errors.database_errors import InvalidStatusError
 from ..errors.rental_errors import RentalDoesNotExistsError, RentalUpdateError
 from .responses import json_response, error_response
 
+
 class StatusUpdatable(Protocol):
     def update_status(self, id: int, new_status: Any) -> dict[str, Any]: ...
 
 
-def validate_json(
-    request: Request, required_keys: list[str]
-) -> dict[str, Any]:
+def validate_json(request: Request, required_keys: list[str]) -> dict[str, Any]:
     try:
         data: Any = request.get_json()
     except Exception:
@@ -44,37 +43,38 @@ def update_status_and_respond(id: int, new_status: str, service: StatusUpdatable
     try:
         result = service.update_status(id, new_status)
         return json_response(result, HTTPStatus.OK)
-    
+
     # --- JSON Errors ---
     except (MalformedJSONError, EmptyJSONError) as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
     except MissingParametersJSONError as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
-        
+
     # --- Vehicle Errors ---
     except VehicleDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
     except VehicleUpdateError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
-    
+
     # --- Database Errors ---
     except psycopg2.errors.CheckViolation:
         return error_response("Invalid status", HTTPStatus.BAD_REQUEST)
     except InvalidStatusError:
         return error_response("Invalid status", HTTPStatus.BAD_REQUEST)
-    
-    # --- User Errors ---     
+
+    # --- User Errors ---
     except UserDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.UNPROCESSABLE_ENTITY)
     except UserUpdateError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
-    
+
     except RentalDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
     except RentalUpdateError as e:
         return error_response(str(e), HTTPStatus.BAD_REQUEST)
 
-
     except Exception as e:
         print(f"Unexpected error: {e}")
-        return error_response("An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR)
+        return error_response(
+            "An unexpected error occurred", HTTPStatus.INTERNAL_SERVER_ERROR
+        )

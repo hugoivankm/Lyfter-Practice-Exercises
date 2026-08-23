@@ -25,8 +25,8 @@ from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
 class RentalService(BaseService):
     """Service layer for handling core transaction flows and business operations for Rentals.
 
-    Coordinates activities between the RentalRepository and related domain services 
-    (UserService, VehicleService) to ensure complex business constraints are met 
+    Coordinates activities between the RentalRepository and related domain services
+    (UserService, VehicleService) to ensure complex business constraints are met
     before altering rental ledger states.
 
     Attributes:
@@ -53,21 +53,21 @@ class RentalService(BaseService):
     ) -> dict[str, Any]:
         """Registers a new vehicle rental transaction after validating business requirements.
 
-        Validates that the target customer's account state is strictly ACTIVE and that 
-        the target vehicle record context status is strictly AVAILABLE. Upon success, 
+        Validates that the target customer's account state is strictly ACTIVE and that
+        the target vehicle record context status is strictly AVAILABLE. Upon success,
         automatically moves the target vehicle's state profile to RESERVED.
 
         Args:
             users_id (int): Unique database primary identifier key for the user.
             vehicles_id (int): Unique database primary identifier key for the vehicle.
-            status (RentalStatus): The initial transactional status profile. 
+            status (RentalStatus): The initial transactional status profile.
                 Defaults to RentalStatus.PENDING.
 
         Returns:
             dict[str, Any]: A structural dictionary layout tracking the newly opened rental record elements.
 
         Raises:
-            RentalCreationError: If the target customer account isn't active, the vehicle isn't available, 
+            RentalCreationError: If the target customer account isn't active, the vehicle isn't available,
                 relational data verification fails via Check Violations, or a downstream dependency fails.
             VehicleUpdateError: If the backend fails to safely toggle the vehicle context state to RESERVED.
         """
@@ -133,11 +133,11 @@ class RentalService(BaseService):
         """Queries and parses targeted collections of rental ledgers matching criteria parameters.
 
         Args:
-            status (dict[str, str] | None): Dictionary key mappings holding query targets 
+            status (dict[str, str] | None): Dictionary key mappings holding query targets
                 and baseline match string data evaluated by dynamic query engines.
 
         Returns:
-            list[dict[str, Any]]: A clean array data collection tracking individual dictionary 
+            list[dict[str, Any]]: A clean array data collection tracking individual dictionary
                 records. Returns an empty list if matching records result in a length less than 1.
 
         Raises:
@@ -170,11 +170,11 @@ class RentalService(BaseService):
             NotImplementedError: This functionality is explicitly disabled or unsupported in this iteration.
         """
         raise NotImplementedError()
-    
+
     def _complete_rental(self, rental_id: int) -> Optional[Rental]:
         """Internal worker method processing state closing workflows for a completed rental.
 
-        Frees up linked asset components by returning the targeted vehicle's data operational 
+        Frees up linked asset components by returning the targeted vehicle's data operational
         state flag back to AVAILABLE before flipping the target rental state context flag to COMPLETED.
 
         Args:
@@ -184,7 +184,7 @@ class RentalService(BaseService):
             Optional[Rental]: The updated Rental entity if the database commits status updates successfully.
 
         Raises:
-            RentalUpdateError: If the vehicle resource update steps fail or if the repository 
+            RentalUpdateError: If the vehicle resource update steps fail or if the repository
                 cannot commit the updated rental record.
             DbRetrievalError: On underlying relational row or connectivity driver socket processing drop exceptions.
         """
@@ -202,7 +202,7 @@ class RentalService(BaseService):
             )
             if updated_rental is None:
                 raise RentalUpdateError("Unable to update rental status")
-            
+
             return updated_rental
 
         except psycopg2.Error as e:
@@ -217,7 +217,7 @@ class RentalService(BaseService):
     def update_status(self, id: int, new_status: Any) -> dict[str, Any]:
         """Updates the operational step state for a specific registered target rental ledger.
 
-        Detects if the incoming processing target switches the transaction into a COMPLETED state. 
+        Detects if the incoming processing target switches the transaction into a COMPLETED state.
         If true, it routes tracking queries inward to trigger internal cross-service asset-release routines.
 
         Args:
@@ -228,7 +228,7 @@ class RentalService(BaseService):
             dict[str, Any]: A serialized dictionary representing the freshly updated status configurations.
 
         Raises:
-            RentalUpdateError: If status argument parsing fails system requirements, if processing attempts 
+            RentalUpdateError: If status argument parsing fails system requirements, if processing attempts
                 re-complete an already completed rental record, or if updates fail to register.
             RentalDoesNotExistsError: If early target lookup verification passes return null values.
         """

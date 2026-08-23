@@ -23,6 +23,7 @@ def generate_random_vin() -> str:
     characters = string.ascii_uppercase + string.digits
     return "".join(random.choices(characters, k=17))
 
+
 def assign_probabilistically[T](value: T) -> T | None:
     return None if random.random() < 0.10 else value
 

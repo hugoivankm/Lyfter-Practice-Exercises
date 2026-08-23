@@ -23,9 +23,7 @@ class ProductService:
             return []
         return [p.to_dict() for p in products]
 
-    def update(
-        self, id: int, price: float, quantity: int
-    ) -> dict[str, Any] | None:
+    def update(self, id: int, price: float, quantity: int) -> dict[str, Any] | None:
         updated_product = self.repo.update_product(id, quantity, price)
         if not updated_product:
             return None

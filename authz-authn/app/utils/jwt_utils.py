@@ -1,6 +1,7 @@
 import jwt
 import os
-from typing import Any
+from typing import Any, Dict
+from datetime import datetime, UTC, timedelta
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class JWT_Manager:
+class JWTManager:
     def __init__(self, algorithm: str = "RS256"):
         self.algorithm = algorithm
 
@@ -35,7 +36,7 @@ class JWT_Manager:
 
                 with open(public_key_path, "rb") as f:
                     self.public_key = f.read()
-                return  
+                return
             except Exception as e:
                 print(f"Error loading existing keys: {e}. Generating new key pair...")
 
@@ -61,17 +62,49 @@ class JWT_Manager:
         with open(public_key_path, "wb") as f:
             f.write(self.public_key)
 
-    def encode(self, data: dict[str, Any]):
-        try:
-            encoded = jwt.encode(data, self.private_key, algorithm=self.algorithm)
-            return encoded
-        except Exception:
-            return None
+    def _extract_subject(self, data: Dict[str, Any]) -> str:
+        subject = data.get("sub") or data.get("user_id") or data.get("id")
+        if subject is None:
+            raise ValueError(
+                "Payload must contain a user identifier (sub, user_id, or id)"
+            )
+        return str(subject)
 
-    def decode(self, token: str):
-        try:
-            decoded = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
-            return decoded
-        except Exception as e:
-            print(e)
-            return None
+    def _create_access_payload(
+        self, data: Dict[str, Any], expires_in_minutes: int
+    ) -> Dict[str, Any]:
+        now = datetime.now(UTC)
+        return {
+            "sub": self._extract_subject(data),
+            "role": data.get("role"),
+            "type": "access",
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(minutes=expires_in_minutes)).timestamp()),
+        }
+
+    def _create_refresh_payload(
+        self, data: Dict[str, Any], expires_in_days: int
+    ) -> Dict[str, Any]:
+        now = datetime.now(UTC)
+        return {
+            "sub": self._extract_subject(data),
+            "role": data.get("role"),
+            "type": "refresh",
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(days=expires_in_days)).timestamp()),
+        }
+
+    def encode_access_token(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        minutes = 15
+        payload = self._create_access_payload(data, expires_in_minutes=minutes)
+        token = jwt.encode(payload, self.private_key, algorithm=self.algorithm)
+        return {"access_token": token, "expires_in": minutes * 60}
+
+    def encode_refresh_token(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        days = 7
+        payload = self._create_refresh_payload(data, expires_in_days=days)
+        token = jwt.encode(payload, self.private_key, algorithm=self.algorithm)
+        return {"refresh_token": token, "expires_in": days * 24 * 60 * 60}
+
+    def decode(self, token: str) -> Dict[str, Any]:
+        return jwt.decode(token, self.public_key, algorithms=[self.algorithm])

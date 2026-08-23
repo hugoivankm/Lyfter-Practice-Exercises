@@ -26,9 +26,7 @@ class UserRepository:
     def get_by_vehicle_count(self, count: int, or_more: bool = False) -> list[User]:
 
         vehicle_count_subquery = (
-            select(func.count())
-            .where(Vehicle.user_id == User.id)
-            .scalar_subquery()
+            select(func.count()).where(Vehicle.user_id == User.id).scalar_subquery()
         )
 
         if or_more:
@@ -36,4 +34,3 @@ class UserRepository:
         else:
             stmt = select(User).where(vehicle_count_subquery == count)
         return list(self.session.scalars(stmt).all())
-

@@ -116,15 +116,16 @@ def update_product(id: int):
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
 
+
 @product_bp.route("/<int:id>", methods=["DELETE"])
 @admin_required
 def delete_product(id: int):
-   try:
-    product_service = ProductService(g.db_session)
-    deleted_product = product_service.delete(id)
-    if not deleted_product:
-        raise Exception("Unable to delete product")
-    return deleted_product
-   except Exception as ex:
-       print(ex)
-       return jsonify({"error": "Something went wrong"}), 500 
+    try:
+        product_service = ProductService(g.db_session)
+        deleted_product = product_service.delete(id)
+        if not deleted_product:
+            raise Exception("Unable to delete product")
+        return deleted_product
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Something went wrong"}), 500

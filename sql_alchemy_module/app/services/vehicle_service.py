@@ -31,9 +31,9 @@ class VehicleService:
             "id": new_vehicle.id,
             "model": new_vehicle.model,
             "make": new_vehicle.make,
-            "year" : new_vehicle.year,
+            "year": new_vehicle.year,
             "vin": new_vehicle.vin,
-            "user_id": new_vehicle.user_id
+            "user_id": new_vehicle.user_id,
         }
 
     def get_vehicle_by_id(self, id: int):
@@ -57,7 +57,7 @@ class VehicleService:
 
     def get_all_vehicles(self, filter: Optional[str]) -> list[dict[str, Any]]:
         if filter == "no_user":
-            vehicles =  self.vehicles_repo.get_by_no_user()
+            vehicles = self.vehicles_repo.get_by_no_user()
         else:
             stmt = select(Vehicle)
             vehicles = self.vehicles_repo.session.scalars(stmt).all()
@@ -68,17 +68,13 @@ class VehicleService:
         vehicle = self.vehicles_repo.get_by_id(vehicle_id)
 
         if vehicle is None:
-            raise VehicleNotFoundError(
-                f"vehicles with ID {vehicle_id} does not exist."
-            )
+            raise VehicleNotFoundError(f"vehicles with ID {vehicle_id} does not exist.")
 
         vehicle.model = str(data.get("model", vehicle.model))
         vehicle.make = str(data.get("make", vehicle.make))
         vehicle.year = int(data.get("year", vehicle.year))
-        if data.get("user_id", vehicle.user_id): 
+        if data.get("user_id", vehicle.user_id):
             vehicle.user_id = int(data.get("user_id", vehicle.user_id))
 
         self.vehicles_repo.save(vehicle)
         return vehicle.to_dict()
-    
-

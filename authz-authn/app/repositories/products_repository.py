@@ -49,4 +49,3 @@ class ProductRepository:
         self.session.delete(product)
         self.session.flush()
         return product
-

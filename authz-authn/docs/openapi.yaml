@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Lyfter JWT
-  description: API specification generated from Flask blueprints for User, Product, Invoice, and Order services.
+  description: API specification generated from Flask blueprints for User, Product, Invoice, Order, and Contact services.
   version: 1.0.0
 servers:
   - url: http://localhost:5000
@@ -14,7 +14,7 @@ paths:
   /users/register:
     post:
       summary: Register a new user
-      description: Requires admin privileges.
+      description: Creates a new user in the system. Requires admin privileges.
       tags:
         - Users
       security:
@@ -26,21 +26,31 @@ paths:
             schema:
               $ref: '#/components/schemas/UserAuthRequest'
       responses:
-        '200':
+        '201':
           description: User registered successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthTokenResponse'
         '400':
-          description: Missing required fields (username or password)
+          description: Missing or invalid required fields (username or password)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized or admin access required
+        '409':
+          description: Conflict (e.g., username already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users/login:
     post:
       summary: Authenticate user
-      description: Logs in a user and returns a JWT token.
+      description: Logs in a user and returns access and refresh JWT tokens.
       tags:
         - Users
       requestBody:
@@ -57,9 +67,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthTokenResponse'
         '400':
-          description: Missing required fields
+          description: Invalid JSON, missing required fields, or empty values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server configuration error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users/me:
     get:
@@ -76,7 +100,212 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserProfile'
         '401':
-          description: Invalid or expired token
+          description: Invalid or expired access token, or user no longer exists
+
+  /users/refresh:
+    post:
+      summary: Refresh access token
+      description: Issues a new access token using a valid refresh token provided in the Authorization header.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: New access token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Invalid, missing, or expired refresh token
+
+  # ==========================================
+  # CONTACT ROUTES (/contacts)
+  # ==========================================
+  /contacts/create:
+    post:
+      summary: Create a new contact
+      description: Regular users create contacts for themselves. Admins can optionally specify `user_id` to create a contact for another user.
+      tags:
+        - Contacts
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactCreateRequest'
+      responses:
+        '201':
+          description: Contact created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        '400':
+          description: Invalid JSON, missing parameters, or invalid field values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /contacts/:
+    get:
+      summary: List contacts
+      description: Returns contacts for the authenticated user. Admins can pass `user_id` to inspect contacts belonging to a specific user.
+      tags:
+        - Contacts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user_id
+          required: false
+          schema:
+            type: integer
+          description: Filter contacts by user ID (admin privilege required to query other users)
+      responses:
+        '200':
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /contacts/{id}:
+    get:
+      summary: Get contact by ID
+      description: Retrieves a specific contact. Non-admins can only retrieve contacts that belong to them.
+      tags:
+        - Contacts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique contact ID
+      responses:
+        '200':
+          description: Contact retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        '404':
+          description: Contact not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update a contact
+      description: Updates name, phone number, and email. Non-admins can only update their own contacts.
+      tags:
+        - Contacts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique contact ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactUpdateRequest'
+      responses:
+        '200':
+          description: Contact updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        '400':
+          description: Invalid JSON or parameter validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Contact not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a contact by ID
+      description: Deletes a contact record. Non-admins can only delete their own contacts.
+      tags:
+        - Contacts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Unique contact ID
+      responses:
+        '200':
+          description: Contact deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        '404':
+          description: Contact not found or access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==========================================
   # PRODUCT ROUTES (/products)
@@ -244,7 +473,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                
+
   /invoices/:
     get:
       summary: Retrieve invoices
@@ -281,6 +510,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
   /invoices/{id}:
     get:
       summary: Get invoice by ID
@@ -409,8 +639,12 @@ components:
     AuthTokenResponse:
       type: object
       properties:
-        token:
+        access_token:
           type: string
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        refresh_token:
+          type: string
+          description: Included if the endpoint issues refresh tokens (e.g., login, register).
           example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
     UserProfile:
@@ -422,6 +656,69 @@ components:
         username:
           type: string
           example: john_doe
+        role:
+          type: string
+          example: user
+
+    ContactCreateRequest:
+      type: object
+      required:
+        - name
+        - phone_number
+        - email
+      properties:
+        name:
+          type: string
+          example: Jane Doe
+        phone_number:
+          type: string
+          example: "+15551234567"
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
+        user_id:
+          type: integer
+          description: Optional target user ID (Admin privilege required)
+          example: 10
+
+    ContactUpdateRequest:
+      type: object
+      required:
+        - name
+        - phone_number
+        - email
+      properties:
+        name:
+          type: string
+          example: Jane Doe
+        phone_number:
+          type: string
+          example: "+15559876543"
+        email:
+          type: string
+          format: email
+          example: jane.updated@example.com
+
+    Contact:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1001
+        user_id:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: Jane Doe
+        phone_number:
+          type: string
+          example: "+15551234567"
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
 
     ProductCreateRequest:
       type: object

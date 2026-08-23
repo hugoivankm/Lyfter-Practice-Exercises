@@ -50,7 +50,7 @@ class RentalRepository(BaseRepository):
 
             cur.execute(query, (status, id))
             row = cur.fetchone()
-            
+
             return Rental.from_row(row)
 
     def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Rental]]:

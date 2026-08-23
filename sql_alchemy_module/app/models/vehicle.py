@@ -7,6 +7,7 @@ from .model import Base
 if TYPE_CHECKING:
     from .user import User
 
+
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
@@ -29,7 +30,7 @@ class Vehicle(Base):
 
     def __repr__(self) -> str:
         return f"Vehicle(id={self.id!r}, make={self.make!r}, model={self.model!r}, year={self.year})"
-    
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
@@ -37,6 +38,5 @@ class Vehicle(Base):
             "model": self.model,
             "year": self.year,
             "vin": self.vin,
-            "user_id": self.user_id
+            "user_id": self.user_id,
         }
-    

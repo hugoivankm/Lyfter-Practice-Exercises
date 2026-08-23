@@ -2,11 +2,12 @@ from typing import Any
 from flask import Flask, g
 from flask.json.provider import DefaultJSONProvider
 from app.database.db_manager import DatabaseManager
-from app.utils.jwt_utils import JWT_Manager
+from app.utils.jwt_utils import JWTManager
 from app.models import Base
 from app.models import User
 from app.models import Product
-from app.routes import user_bp, product_bp, invoice_bp, order_bp
+from app.routes import user_bp, product_bp, invoice_bp, order_bp, contact_bp
+from werkzeug.security import generate_password_hash
 
 
 def seed_demo_admin(db_manager: DatabaseManager) -> None:
@@ -16,12 +17,19 @@ def seed_demo_admin(db_manager: DatabaseManager) -> None:
         if not admin:
             demo_admin = User(
                 username="admin",
-                password="admin",
+                password=generate_password_hash("admin"),
                 role="admin",
             )
             session.add(demo_admin)
             session.commit()
             print("Initial admin user created")
+        else:
+            if not admin.password.startswith(
+                ("scrypt:", "pbkdf2:")
+            ):
+                admin.password = generate_password_hash("admin")
+                session.commit()
+                print("Updated existing admin password to valid hash")
     except Exception as e:
         session.rollback()
         print(f"Failed to seed demo admin: {e}")
@@ -31,7 +39,7 @@ def seed_demo_admin(db_manager: DatabaseManager) -> None:
 
 def seed_demo_products(db_manager: DatabaseManager) -> None:
     session = db_manager.create_session()
-    fruits:list[dict[str, Any]] = [
+    fruits: list[dict[str, Any]] = [
         {"name": "Apple", "price": 1.50, "quantity": 100},
         {"name": "Banana", "price": 0.75, "quantity": 150},
         {"name": "Orange", "price": 1.25, "quantity": 80},
@@ -74,13 +82,14 @@ def create_app() -> Flask:
     seed_demo_admin(db_manager)
     seed_demo_products(db_manager)
 
-    jwt = JWT_Manager(algorithm="RS256")
-    app.extensions["jwt_manager"] = jwt  
+    jwt = JWTManager(algorithm="RS256")
+    app.extensions["jwt_manager"] = jwt
 
     app.register_blueprint(user_bp, url_prefix="/users")
     app.register_blueprint(product_bp, url_prefix="/products")
     app.register_blueprint(invoice_bp, url_prefix="/invoices")
     app.register_blueprint(order_bp, url_prefix="/orders")
+    app.register_blueprint(contact_bp, url_prefix="/contacts")
 
     @app.route("/liveness")
     def liveness():

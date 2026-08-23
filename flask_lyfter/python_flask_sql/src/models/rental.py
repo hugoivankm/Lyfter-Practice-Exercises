@@ -28,14 +28,18 @@ class Rental:
         if not row:
             return None
         return cls(
-            id=row[0], users_id=row[1], vehicles_id=row[2], rental_date=row[3], rental_status=row[4]
+            id=row[0],
+            users_id=row[1],
+            vehicles_id=row[2],
+            rental_date=row[3],
+            rental_status=row[4],
         )
 
     def to_dict(self) -> dict[str, Any]:
-                return {
+        return {
             "id": self.id,
             "users_id": self.users_id,
             "vehicles_id": self.vehicles_id,
             "rental_date": self.rental_date.isoformat() if self.rental_date else None,
-            "rental_status": self.rental_status
+            "rental_status": self.rental_status,
         }

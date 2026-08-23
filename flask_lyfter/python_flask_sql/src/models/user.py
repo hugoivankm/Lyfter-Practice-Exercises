@@ -9,6 +9,7 @@ class AccountStatus(StrEnum):
     ACTIVE = "active"
     DELINQUENT = "delinquent"
 
+
 @dataclass
 class User:
     id: int
@@ -30,7 +31,7 @@ class User:
             password="********",
             full_name=row[4],
             birthdate=row[5],
-            account_status=AccountStatus(row[6])
+            account_status=AccountStatus(row[6]),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -41,5 +42,5 @@ class User:
             "password": self.password,
             "full_name": self.full_name,
             "birthdate": self.birthdate.isoformat() if self.birthdate else None,
-            "account_status": self.account_status.value
+            "account_status": self.account_status.value,
         }

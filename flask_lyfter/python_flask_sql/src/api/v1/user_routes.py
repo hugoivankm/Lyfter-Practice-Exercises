@@ -64,7 +64,11 @@ def create_user():
             )
         else:
             user_dict = service.register(
-                data["email"], data["username"], data["password"], data["full_name"], data["birthdate"]
+                data["email"],
+                data["username"],
+                data["password"],
+                data["full_name"],
+                data["birthdate"],
             )
 
         return json_response(user_dict, HTTPStatus.CREATED)

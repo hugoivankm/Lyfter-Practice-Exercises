@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from .invoice import Invoice
     from .product import Product
 
+
 class InvoiceDetail(Base):
     __tablename__ = "invoice_details"
 
@@ -23,11 +24,10 @@ class InvoiceDetail(Base):
     def line_total(self) -> float:
         return float(self.unit_price) * self.quantity
 
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "product_name": self.product.name,
             "quantity": self.quantity,
             "unit_price": float(self.unit_price),
-            "line_total": self.line_total
+            "line_total": self.line_total,
         }

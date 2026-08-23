@@ -108,7 +108,7 @@ def get_rental(rental_id: int):
     service = RentalService(g.db)
     try:
         rental = service.get(rental_id)
-        return json_response(rental, HTTPStatus.OK)  
+        return json_response(rental, HTTPStatus.OK)
     except RentalDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
     except DbRetrievalError as e:

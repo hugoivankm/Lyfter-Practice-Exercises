@@ -22,7 +22,6 @@ class UserDeletionError(Exception):
     pass
 
 
-
 class UserDoesNotExistsError(Exception):
     """
     Raised when user does not exist in database

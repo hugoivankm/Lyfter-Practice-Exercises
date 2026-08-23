@@ -7,7 +7,9 @@ class InvoiceService:
     def __init__(self, session: Session) -> None:
         self.repo = InvoiceRepository(session)
 
-    def create(self, user_id: int, items: List[Dict[str, Any]]) -> Dict[str, Any] | None:
+    def create(
+        self, user_id: int, items: List[Dict[str, Any]]
+    ) -> Dict[str, Any] | None:
         invoice = self.repo.create_invoice(user_id, items)
         if not invoice:
             return None
@@ -29,13 +31,13 @@ class InvoiceService:
         invoices = self.repo.get_invoices()
         if not invoices:
             return None
-        return [ invoice.to_dict() for invoice in invoices ]
+        return [invoice.to_dict() for invoice in invoices]
 
     def delete(self, id: int) -> Dict[str, Any] | None:
         invoice = self.repo.get_invoice_by_id(id)
         if not invoice:
             return None
-        
+
         data = invoice.to_dict()
         self.repo.delete_invoice(id)
 

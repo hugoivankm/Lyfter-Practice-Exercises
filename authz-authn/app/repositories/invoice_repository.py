@@ -27,9 +27,7 @@ class InvoiceRepository:
     def get_invoice_by_id(self, invoice_id: int) -> Invoice | None:
         stmt = (
             select(Invoice)
-            .options(
-                selectinload(Invoice.details).joinedload(InvoiceDetail.product)
-            )
+            .options(selectinload(Invoice.details).joinedload(InvoiceDetail.product))
             .where(Invoice.id == invoice_id)
         )
         return self.session.scalars(stmt).first()

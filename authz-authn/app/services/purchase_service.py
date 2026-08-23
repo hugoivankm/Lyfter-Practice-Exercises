@@ -19,9 +19,8 @@ class PurchaseService:
             return None
         total_amount = 0.0
         validated_items: List[Dict[str, Any]] = []
-        print(f"HERE: {items}")
+        
         for item in items:
-            
             product_id: int | None = item.get("product_id")
             qty = item.get("quantity", 0)
 
@@ -45,9 +44,7 @@ class PurchaseService:
                 }
             )
 
-        payment_success, _ = PaymentService.process_payment(
-            total_amount, card_number
-        )
+        payment_success, _ = PaymentService.process_payment(total_amount, card_number)
         if not payment_success:
             return None
 

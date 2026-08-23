@@ -6,6 +6,7 @@ from app.services.vehicle_service import VehicleNotFoundError
 
 vehicle_bp = Blueprint("vehicles", __name__)
 
+
 @vehicle_bp.route("/", methods=["GET"])
 def get_vehicles():
     vehicle_service = VehicleService(g.db_session)
@@ -66,7 +67,7 @@ def register_vehicle():
             vin=str(payload["vin"]),
             user_id=user_id,
         )
-        
+
         return jsonify(new_vehicle_dict), 200
     except Exception as e:
         print(f"error: {e}")

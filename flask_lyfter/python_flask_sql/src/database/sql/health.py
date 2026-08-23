@@ -1,6 +1,7 @@
 import psycopg2
 from typing import TypedDict
 
+
 class DBConfigOpts(TypedDict):
     dbname: str
     user: str
@@ -11,13 +12,13 @@ class DBConfigOpts(TypedDict):
 
 def main():
     DB_CONFIG: DBConfigOpts = {
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "port": "5432",
-}
-            
+        "dbname": "postgres",
+        "user": "postgres",
+        "password": "postgres",
+        "host": "localhost",
+        "port": "5432",
+    }
+
     try:
         with psycopg2.connect(**DB_CONFIG) as conn:
             query = """
@@ -33,6 +34,7 @@ def main():
             print("DB OK. System operating normally.")
     except psycopg2.Error as pge:
         print(f"DB ERROR. {pge}")
+
 
 if __name__ == "__main__":
     main()

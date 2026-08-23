@@ -67,7 +67,7 @@ class UserRepository(BaseRepository):
         with self.db.cursor() as cur:
             if status not in AccountStatus:
                 return None
-            
+
             query: str = """
             UPDATE lyfter_car_rental.users
             SET account_status = %s

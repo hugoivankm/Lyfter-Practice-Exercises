@@ -101,7 +101,7 @@ class VehicleRepository(BaseRepository):
                     )
                 else:
                     where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
-                    
+
                 params.append(value)
 
             if where_clauses:
