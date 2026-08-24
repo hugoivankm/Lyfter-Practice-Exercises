@@ -1,9 +1,8 @@
 from collections.abc import Sequence
 
+from app.models import Contact
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
-from app.models import Contact
 
 
 class ContactRepository:

@@ -1,9 +1,8 @@
 from typing import Any
 
-from sqlalchemy.orm import Session
-
 from app.repositories import InvoiceRepository, ProductRepository
 from app.services.payment_service import PaymentService
+from sqlalchemy.orm import Session
 
 
 class PurchaseService:

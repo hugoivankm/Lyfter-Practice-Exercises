@@ -1,7 +1,6 @@
+from app.models.login_entry import LoginEntry
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
-from app.models.login_entry import LoginEntry
 
 
 class LoginEntryRepository:

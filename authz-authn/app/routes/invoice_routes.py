@@ -1,9 +1,8 @@
 from typing import Any, cast
 
-from flask import Blueprint, g, jsonify, request
-
 from app.services import InvoiceService
 from app.utils.decorators import admin_required
+from flask import Blueprint, g, jsonify, request
 
 invoice_bp = Blueprint("invoices", __name__)
 

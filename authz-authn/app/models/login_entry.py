@@ -1,10 +1,9 @@
 from datetime import UTC, datetime
 from typing import Any
 
+from app.models.model import Base
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
-
-from app.models.model import Base
 
 
 class LoginEntry(Base):

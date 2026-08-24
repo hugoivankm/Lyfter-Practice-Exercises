@@ -1,9 +1,8 @@
 import random
 from typing import Any
 
-from sqlalchemy.orm import Session
-
 from app.repositories.login_entry_repository import LoginEntryRepository
+from sqlalchemy.orm import Session
 
 
 class LoginEntryService:
