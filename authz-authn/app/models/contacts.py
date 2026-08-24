@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Any, TYPE_CHECKING
-from sqlalchemy import String, DateTime, func, ForeignKey
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:

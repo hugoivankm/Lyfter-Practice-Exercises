@@ -1,7 +1,8 @@
 from flask import Blueprint
+
+from .rental_routes import rental_bp
 from .user_routes import user_bp
 from .vehicle_routes import vehicle_bp
-from .rental_routes import rental_bp
 
 v1_bp = Blueprint("v1", __name__)
 

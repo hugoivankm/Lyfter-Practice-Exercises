@@ -1,15 +1,16 @@
-from typing import Any, List
-from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from typing import Any
+
 from app.models.invoice import Invoice
 from app.models.invoice_detail import InvoiceDetail
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
 
 class InvoiceRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def create_invoice(self, user_id: int, items: List[dict[str, Any]]) -> Invoice:
+    def create_invoice(self, user_id: int, items: list[dict[str, Any]]) -> Invoice:
         invoice = Invoice(user_id=user_id)
 
         for item in items:
@@ -32,12 +33,12 @@ class InvoiceRepository:
         )
         return self.session.scalars(stmt).first()
 
-    def get_invoices(self) -> List[Invoice] | None:
+    def get_invoices(self) -> list[Invoice] | None:
         stmt = select(Invoice).options(selectinload(Invoice.details))
         invoices = list(self.session.scalars(stmt).all())
         return invoices if invoices else None
 
-    def get_invoices_by_user(self, user_id: int) -> List[Invoice]:
+    def get_invoices_by_user(self, user_id: int) -> list[Invoice]:
         stmt = (
             select(Invoice)
             .options(selectinload(Invoice.details))

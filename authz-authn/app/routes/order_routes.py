@@ -1,8 +1,8 @@
-from typing import Any, Dict, List
-from flask import Blueprint, jsonify, g, request
+from typing import Any
+
 from app.services import PurchaseService
 from app.utils.decorators import login_required
-
+from flask import Blueprint, g, jsonify, request
 
 order_bp = Blueprint("orders", __name__)
 
@@ -14,9 +14,9 @@ def process():
         if not request.is_json:
             return jsonify({"error": "Content-Type must be application/json"}), 400
 
-        raw_data: Dict[str, Any] = request.get_json() or {}
+        raw_data: dict[str, Any] = request.get_json() or {}
 
-        items: List[Dict[str, Any]] | None = raw_data.get("items")
+        items: list[dict[str, Any]] | None = raw_data.get("items")
 
         if not isinstance(items, list) or not items:
             return jsonify({"error": "Missing or empty 'items' list"}), 400

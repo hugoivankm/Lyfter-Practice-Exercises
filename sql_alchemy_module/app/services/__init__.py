@@ -1,3 +1,3 @@
-from .user_service import UserService, UserNotFoundError
+from .user_service import UserNotFoundError, UserService
 
-__all__ = ["UserService", "UserNotFoundError"]
+__all__ = ["UserNotFoundError", "UserService"]

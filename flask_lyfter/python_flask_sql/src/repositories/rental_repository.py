@@ -1,12 +1,11 @@
-from typing import Optional
 from dataclasses import fields
 
 from psycopg2 import sql
-from psycopg2.sql import Composable
 from psycopg2.extensions import connection as _connection
+from psycopg2.sql import Composable
 
-from .repository import BaseRepository
 from ..models.rental import Rental, RentalStatus
+from .repository import BaseRepository
 
 
 class RentalRepository(BaseRepository):
@@ -15,7 +14,7 @@ class RentalRepository(BaseRepository):
 
     def create(
         self, users_id: int, vehicles_id: int, rental_status: RentalStatus
-    ) -> Optional[Rental]:
+    ) -> Rental | None:
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lyfter_car_rental.rentals (users_id, vehicles_id, rental_status) VALUES (%s, %s, %s) RETURNING *",
@@ -25,7 +24,7 @@ class RentalRepository(BaseRepository):
             row = cur.fetchone()
             return Rental.from_row(row)
 
-    def get_by_id(self, id: int) -> Optional[Rental]:
+    def get_by_id(self, id: int) -> Rental | None:
         query = """
             SELECT id, users_id, vehicles_id, rental_date, rental_status
             FROM lyfter_car_rental.rentals
@@ -37,7 +36,7 @@ class RentalRepository(BaseRepository):
             row = cur.fetchone()
             return Rental.from_row(row)
 
-    def update_status(self, id: int, status: RentalStatus) -> Optional[Rental]:
+    def update_status(self, id: int, status: RentalStatus) -> Rental | None:
         with self.db.cursor() as cur:
             if status not in RentalStatus:
                 return None
@@ -53,7 +52,7 @@ class RentalRepository(BaseRepository):
 
             return Rental.from_row(row)
 
-    def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Rental]]:
+    def get_all(self, filters: dict[str, str] | None = None) -> list[Rental | None]:
         all_fields = fields(Rental)
         string_keys = {f.name for f in all_fields if f.type is str}
 

@@ -3,7 +3,6 @@ class RentalCreationError(Exception):
     Raised when database fails to create a rental.
     """
 
-    pass
 
 
 class FatalRentalCreationError(Exception):
@@ -12,7 +11,6 @@ class FatalRentalCreationError(Exception):
     rental with internal error from database.
     """
 
-    pass
 
 
 class RentalDoesNotExistsError(Exception):
@@ -20,7 +18,6 @@ class RentalDoesNotExistsError(Exception):
     Raised when rental does not exist in database
     """
 
-    pass
 
 
 class RentalUpdateError(Exception):
@@ -28,4 +25,3 @@ class RentalUpdateError(Exception):
     Raised when database fails to update a rental.
     """
 
-    pass

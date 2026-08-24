@@ -1,15 +1,15 @@
-from typing import Optional
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
+
 from app.models import User
 from app.models.vehicle import Vehicle
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 
 class UserRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, user_id: int) -> User | None:
         return self.session.get(User, user_id)
 
     def create(self, user: User) -> User:

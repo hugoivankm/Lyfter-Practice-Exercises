@@ -1,21 +1,21 @@
-from typing import Any, Optional
+from typing import Any
 
 import psycopg2
 from psycopg2.extensions import connection as _connection
 
-from .service import BaseService
-from ..repositories.vehicle_repository import Vehicle, VehicleRepository, VehicleStatus
+from ..api.errors.database_errors import (
+    DbRetrievalError,
+    InvalidFilterError,
+    InvalidStatusError,
+)
 from ..api.errors.vehicle_errors import (
     VehicleCreationError,
     VehicleDeletionError,
     VehicleDoesNotExistsError,
     VehicleUpdateError,
 )
-from ..api.errors.database_errors import (
-    DbRetrievalError,
-    InvalidStatusError,
-    InvalidFilterError,
-)
+from ..repositories.vehicle_repository import Vehicle, VehicleRepository, VehicleStatus
+from .service import BaseService
 
 
 class VehicleService(BaseService):
@@ -42,7 +42,7 @@ class VehicleService(BaseService):
         make: str,
         model: str,
         model_year: int,
-        vehicle_status: Optional[VehicleStatus],
+        vehicle_status: VehicleStatus | None,
     ) -> dict[str, Any]:
         """Registers a brand new vehicle within the inventory system.
 

@@ -50,7 +50,7 @@ paths:
   /users/login:
     post:
       summary: Authenticate user
-      description: Logs in a user and returns access and refresh JWT tokens.
+      description: Logs in a user and returns access and refresh JWT tokens. Logs the attempt in login history.
       tags:
         - Users
       requestBody:
@@ -123,6 +123,50 @@ paths:
                     example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
         '401':
           description: Invalid, missing, or expired refresh token
+
+  /users/login-history:
+    get:
+      summary: Retrieve login history
+      description: Returns login attempts and audit records. Can be filtered by user ID. Requires admin privileges.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user_id
+          required: false
+          schema:
+            type: integer
+          description: Optional filter to retrieve login entries for a specific user ID
+          example: 1
+      responses:
+        '200':
+          description: List of login entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoginEntry'
+        '400':
+          description: Invalid user_id query parameter format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized or admin privilege required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==========================================
   # CONTACT ROUTES (/contacts)
@@ -659,6 +703,28 @@ components:
         role:
           type: string
           example: user
+
+    LoginEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        user_id:
+          type: integer
+          nullable: true
+          description: The ID of the authenticated user, or null if login failed with an unknown username.
+          example: 1
+        ip_address:
+          type: string
+          example: "192.0.2.1"
+        is_success:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-23T21:30:00+00:00"
 
     ContactCreateRequest:
       type: object

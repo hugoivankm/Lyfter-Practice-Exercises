@@ -1,12 +1,11 @@
 from typing import Any
+
+from app.database.db_manager import DatabaseManager
+from app.models import Base, Product, User
+from app.routes import contact_bp, invoice_bp, order_bp, product_bp, user_bp
+from app.utils.jwt_utils import JWTManager
 from flask import Flask, g
 from flask.json.provider import DefaultJSONProvider
-from app.database.db_manager import DatabaseManager
-from app.utils.jwt_utils import JWTManager
-from app.models import Base
-from app.models import User
-from app.models import Product
-from app.routes import user_bp, product_bp, invoice_bp, order_bp, contact_bp
 from werkzeug.security import generate_password_hash
 
 
@@ -24,9 +23,7 @@ def seed_demo_admin(db_manager: DatabaseManager) -> None:
             session.commit()
             print("Initial admin user created")
         else:
-            if not admin.password.startswith(
-                ("scrypt:", "pbkdf2:")
-            ):
+            if not admin.password.startswith(("scrypt:", "pbkdf2:")):
                 admin.password = generate_password_hash("admin")
                 session.commit()
                 print("Updated existing admin password to valid hash")

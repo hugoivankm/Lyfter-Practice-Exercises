@@ -1,7 +1,7 @@
+
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extensions import connection as _connection
-from typing import Optional
 
 
 class DbManager:
@@ -25,7 +25,7 @@ class DbManager:
             raise Exception("Database pool not initialized")
         return self._pool.getconn()  # type: ignore[return-value]
 
-    def release_connection(self, db_conn: Optional[_connection]) -> bool:
+    def release_connection(self, db_conn: _connection | None) -> bool:
         if not self._pool or db_conn is None:
             return False
 

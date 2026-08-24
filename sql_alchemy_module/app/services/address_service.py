@@ -1,15 +1,16 @@
 from typing import Any
+
+from app.models.address import Address
+from app.repositories.address_repository import AddressRepository
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.repositories.address_repository import AddressRepository
-from app.models.address import Address
-from .user_service import UserService, UserNotFoundError
+
+from .user_service import UserNotFoundError, UserService
 
 
 class AddressNotFoundError(Exception):
     "Address not found"
 
-    pass
 
 
 class AddressService:

@@ -19,7 +19,11 @@ backup_dir/
 
 # Private keys
 *.pem
+*.key
 secrets/
+credentials.json
+.git/
+
 
 # Bruno
 collections/

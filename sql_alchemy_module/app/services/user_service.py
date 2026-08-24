@@ -1,13 +1,14 @@
-from typing import Any, Optional
+from typing import Any
+
 from sqlalchemy.orm import Session
-from ..repositories.user_repository import UserRepository
+
 from ..models.user import User
+from ..repositories.user_repository import UserRepository
 
 
 class UserNotFoundError(Exception):
     "User not found"
 
-    pass
 
 
 class UserService:
@@ -50,7 +51,7 @@ class UserService:
 
         return user_dict
 
-    def get_all_users(self, filter: Optional[str]) -> list[dict[str, Any]]:
+    def get_all_users(self, filter: str | None) -> list[dict[str, Any]]:
         if filter == "none":
             users = self.users_repo.get_by_vehicle_count(count=0, or_more=False)
 

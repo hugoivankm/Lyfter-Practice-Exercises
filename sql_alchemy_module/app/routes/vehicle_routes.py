@@ -1,8 +1,7 @@
-from flask import Blueprint, jsonify, g, request
 from typing import Any, cast
-from app.services.vehicle_service import VehicleService
-from app.services.vehicle_service import VehicleNotFoundError
 
+from app.services.vehicle_service import VehicleNotFoundError, VehicleService
+from flask import Blueprint, g, jsonify, request
 
 vehicle_bp = Blueprint("vehicles", __name__)
 

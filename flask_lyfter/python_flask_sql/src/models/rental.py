@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Tuple, Any, Optional
 from datetime import date
 from enum import StrEnum
+from typing import Any, Optional
 
 
 class RentalStatus(StrEnum):
@@ -24,7 +24,7 @@ class Rental:
     rental_status: RentalStatus
 
     @classmethod
-    def from_row(cls, row: Tuple[Any, ...] | None) -> Optional["Rental"]:
+    def from_row(cls, row: tuple[Any, ...] | None) -> Optional["Rental"]:
         if not row:
             return None
         return cls(

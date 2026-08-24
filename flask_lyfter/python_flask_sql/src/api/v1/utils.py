@@ -1,19 +1,19 @@
-from flask import Request
-from typing import Any, cast, Protocol
 from http import HTTPStatus
-import psycopg2
+from typing import Any, Protocol, cast
 
+import psycopg2
+from flask import Request
+
+from ..errors.database_errors import InvalidStatusError
 from ..errors.json_errors import (
-    MalformedJSONError,
     EmptyJSONError,
+    MalformedJSONError,
     MissingParametersJSONError,
 )
-
-from ..errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
-from ..errors.user_errors import UserDoesNotExistsError, UserUpdateError
-from ..errors.database_errors import InvalidStatusError
 from ..errors.rental_errors import RentalDoesNotExistsError, RentalUpdateError
-from .responses import json_response, error_response
+from ..errors.user_errors import UserDoesNotExistsError, UserUpdateError
+from ..errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
+from .responses import error_response, json_response
 
 
 class StatusUpdatable(Protocol):

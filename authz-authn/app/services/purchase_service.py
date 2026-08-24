@@ -1,7 +1,8 @@
-from typing import Any, Dict, List
-from sqlalchemy.orm import Session
+from typing import Any
+
 from app.repositories import InvoiceRepository, ProductRepository
 from app.services.payment_service import PaymentService
+from sqlalchemy.orm import Session
 
 
 class PurchaseService:
@@ -12,14 +13,14 @@ class PurchaseService:
     def process(
         self,
         user_id: int,
-        items: List[Dict[str, Any]],
+        items: list[dict[str, Any]],
         card_number: str = "1111-2222-3333-4444",
-    ) -> Dict[str, Any] | None:
+    ) -> dict[str, Any] | None:
         if not items:
             return None
         total_amount = 0.0
-        validated_items: List[Dict[str, Any]] = []
-        
+        validated_items: list[dict[str, Any]] = []
+
         for item in items:
             product_id: int | None = item.get("product_id")
             qty = item.get("quantity", 0)

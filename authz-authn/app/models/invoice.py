@@ -1,12 +1,14 @@
-from typing import Any, TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import ForeignKey, DateTime, func
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .model import Base
 
 if TYPE_CHECKING:
-    from .user import User
     from .invoice_detail import InvoiceDetail
+    from .user import User
 
 
 class Invoice(Base):

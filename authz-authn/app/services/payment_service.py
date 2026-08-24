@@ -1,11 +1,10 @@
 import time
 import uuid
-from typing import Tuple
 
 
 class PaymentService:
     @staticmethod
-    def process_payment(amount: float, card_number: str) -> Tuple[bool, str]:
+    def process_payment(amount: float, card_number: str) -> tuple[bool, str]:
         if amount <= 0:
             return False, "Invalid payment amount"
 

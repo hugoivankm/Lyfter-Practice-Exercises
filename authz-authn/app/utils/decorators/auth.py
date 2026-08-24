@@ -1,7 +1,9 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, cast
-from flask import current_app, g, jsonify, request
+from typing import Any, cast
+
 import jwt
+from flask import current_app, g, jsonify, request
 
 
 def login_required[F: Callable[..., Any]](f: F) -> F:

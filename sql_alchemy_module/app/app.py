@@ -1,8 +1,8 @@
-from flask import Flask, g
 from app.routes import v1_bp
-from .database.db_manager import DatabaseManager
+from flask import Flask, g
 from flask.json.provider import DefaultJSONProvider
 
+from .database.db_manager import DatabaseManager
 
 app = Flask(__name__)
 db_manager: DatabaseManager = DatabaseManager(

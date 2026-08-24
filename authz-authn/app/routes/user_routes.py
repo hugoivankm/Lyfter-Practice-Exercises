@@ -1,8 +1,9 @@
 from typing import Any, cast
-from flask import Blueprint, request, Response, jsonify, g, current_app
-from app.services import UserService
-from app.utils.decorators import login_required, admin_required, refresh_token_required
+
+from app.services import LoginEntryService, UserService
+from app.utils.decorators import admin_required, login_required, refresh_token_required
 from app.utils.jwt_utils import JWTManager
+from flask import Blueprint, Response, current_app, g, jsonify, request
 
 user_bp = Blueprint("users", __name__)
 
@@ -17,7 +18,7 @@ def register():
         return jsonify({"error": "Username and password required"}), 400
 
     jwt = current_app.extensions["jwt_manager"]
-    user_service = UserService(g.db_session, jwt)
+    user_service = UserService(g.db_session)
 
     try:
         tokens = user_service.register(username, password)
@@ -80,10 +81,8 @@ def login():
             500,
         )
 
-    user_service = UserService(g.db_session, jwt)
-    tokens = user_service.login(username.strip(), password)
-
-    
+    user_service = UserService(g.db_session)
+    tokens = user_service.login(username.strip(), password, jwt)
 
     if not tokens:
         return (
@@ -102,7 +101,7 @@ def login():
 @login_required
 def me():
     jwt = current_app.extensions["jwt_manager"]
-    user_service = UserService(g.db_session, jwt)
+    user_service = UserService(g.db_session)
 
     user = user_service.get_by_id(g.current_user_id)
 
@@ -112,7 +111,7 @@ def me():
     return jsonify(user.to_dict())
 
 
-@user_bp.route("/refresh", methods=["POST"])
+@user_bp.route("/refresh-token", methods=["POST"])
 @refresh_token_required
 def refresh():
     jwt_manager = current_app.extensions["jwt_manager"]
@@ -125,3 +124,26 @@ def refresh():
     )
 
     return jsonify(token_data), 200
+
+@user_bp.route("/login-history", methods=["GET"])
+@admin_required
+def get_login_history():
+    user_id_raw = request.args.get("user_id")
+    target_user_id: int | None = None
+
+    if user_id_raw is not None:
+        try:
+            target_user_id = int(user_id_raw)
+        except ValueError:
+            return (
+                jsonify({
+                    "error": "Bad Request",
+                    "message": "Query parameter 'user_id' must be an integer.",
+                }),
+                400,
+            )
+
+    history_service = LoginEntryService(g.db_session)
+    history = history_service.get_history(user_id=target_user_id)
+
+    return jsonify(history), 200

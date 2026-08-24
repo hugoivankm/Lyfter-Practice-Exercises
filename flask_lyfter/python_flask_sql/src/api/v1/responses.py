@@ -1,6 +1,7 @@
-from flask import jsonify
-from typing import Any
 from http import HTTPStatus
+from typing import Any
+
+from flask import jsonify
 
 
 def json_response(

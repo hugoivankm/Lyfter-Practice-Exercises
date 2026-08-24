@@ -1,8 +1,8 @@
-from flask import Blueprint, jsonify, g, request
-from typing import cast, Any
+from typing import Any, cast
+
 from app.services import ProductService
-from app.utils.decorators import login_required
-from app.utils.decorators import admin_required
+from app.utils.decorators import admin_required, login_required
+from flask import Blueprint, g, jsonify, request
 
 product_bp = Blueprint("products", __name__)
 

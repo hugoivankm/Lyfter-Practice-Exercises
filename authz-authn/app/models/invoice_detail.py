@@ -1,6 +1,8 @@
-from typing import Any, TYPE_CHECKING
-from sqlalchemy import Integer, ForeignKey, Numeric
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import ForeignKey, Integer, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .model import Base
 
 if TYPE_CHECKING:

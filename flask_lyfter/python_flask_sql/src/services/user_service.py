@@ -4,17 +4,17 @@ from typing import Any
 import psycopg2
 from psycopg2.extensions import connection as _connection
 
-from .service import BaseService
-from ..repositories.user_repository import UserRepository
-from ..models.user import User, AccountStatus
+from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
 from ..api.errors.user_errors import (
+    AlreadyExistsError,
     UserCreationError,
     UserDeletionError,
     UserDoesNotExistsError,
     UserUpdateError,
-    AlreadyExistsError,
 )
-from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
+from ..models.user import AccountStatus, User
+from ..repositories.user_repository import UserRepository
+from .service import BaseService
 
 
 class UserService(BaseService):

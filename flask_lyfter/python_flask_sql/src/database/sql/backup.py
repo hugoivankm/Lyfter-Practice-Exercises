@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
+from typing import TypedDict
+
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import connection
-
-from typing import TypedDict
 
 
 class DBConfigOpts(TypedDict):
@@ -24,10 +24,9 @@ def export_table_to_csv(conn: connection, table_name: str, output_dir: str):
         sql.Identifier(schema, table_name)
     )
 
-    with open(csv_file_path, "w", encoding="utf-8") as f:
-        with conn.cursor() as cur:
-            query_string = query.as_string(conn)
-            cur.copy_expert(query_string, f)
+    with open(csv_file_path, "w", encoding="utf-8") as f, conn.cursor() as cur:
+        query_string = query.as_string(conn)
+        cur.copy_expert(query_string, f)
 
 
 def get_tables_names(conn: connection) -> list[str]:

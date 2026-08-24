@@ -1,7 +1,7 @@
-from enum import StrEnum
 from dataclasses import dataclass
 from datetime import date
-from typing import Tuple, Any, Optional
+from enum import StrEnum
+from typing import Any, Optional
 
 
 class AccountStatus(StrEnum):
@@ -21,7 +21,7 @@ class User:
     account_status: AccountStatus
 
     @classmethod
-    def from_row(cls, row: Tuple[Any, ...] | None) -> Optional["User"]:
+    def from_row(cls, row: tuple[Any, ...] | None) -> Optional["User"]:
         if not row:
             return None
         return cls(

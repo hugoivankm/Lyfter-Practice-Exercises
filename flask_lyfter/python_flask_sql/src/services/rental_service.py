@@ -1,17 +1,9 @@
+from typing import Any
+
 import psycopg2
 from psycopg2.extensions import connection as _connection
-from typing import Any, Optional
 
-from .service import BaseService
-from .user_service import UserService
-from .vehicle_service import VehicleService
-
-from ..repositories.rental_repository import Rental, RentalRepository
-
-from ..models.rental import RentalStatus
-from ..models.user import AccountStatus
-from ..models.vehicle import VehicleStatus
-
+from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
 from ..api.errors.rental_errors import (
     RentalCreationError,
     RentalDoesNotExistsError,
@@ -19,7 +11,13 @@ from ..api.errors.rental_errors import (
 )
 from ..api.errors.user_errors import UserDoesNotExistsError
 from ..api.errors.vehicle_errors import VehicleDoesNotExistsError, VehicleUpdateError
-from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
+from ..models.rental import RentalStatus
+from ..models.user import AccountStatus
+from ..models.vehicle import VehicleStatus
+from ..repositories.rental_repository import Rental, RentalRepository
+from .service import BaseService
+from .user_service import UserService
+from .vehicle_service import VehicleService
 
 
 class RentalService(BaseService):
@@ -171,7 +169,7 @@ class RentalService(BaseService):
         """
         raise NotImplementedError()
 
-    def _complete_rental(self, rental_id: int) -> Optional[Rental]:
+    def _complete_rental(self, rental_id: int) -> Rental | None:
         """Internal worker method processing state closing workflows for a completed rental.
 
         Frees up linked asset components by returning the targeted vehicle's data operational

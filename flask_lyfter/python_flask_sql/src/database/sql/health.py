@@ -1,5 +1,6 @@
-import psycopg2
 from typing import TypedDict
+
+import psycopg2
 
 
 class DBConfigOpts(TypedDict):

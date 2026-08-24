@@ -1,5 +1,6 @@
-from typing import Optional, Any, TYPE_CHECKING
-from sqlalchemy import String, ForeignKey, Integer, CheckConstraint
+from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .model import Base
@@ -17,7 +18,7 @@ class Vehicle(Base):
     year: Mapped[int] = mapped_column(
         Integer,
     )
-    vin: Mapped[Optional[str]] = mapped_column(String(17), unique=True)
+    vin: Mapped[str | None] = mapped_column(String(17), unique=True)
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True

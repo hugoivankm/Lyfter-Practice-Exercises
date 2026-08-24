@@ -1,13 +1,12 @@
-from datetime import date
-from typing import Optional
 from dataclasses import fields
+from datetime import date
 
-from psycopg2.extensions import connection as _connection
 from psycopg2 import sql
+from psycopg2.extensions import connection as _connection
 from psycopg2.sql import Composable
 
+from ..models.user import AccountStatus, User
 from .repository import BaseRepository
-from ..models.user import User, AccountStatus
 
 
 class UserRepository(BaseRepository):
@@ -37,7 +36,7 @@ class UserRepository(BaseRepository):
             row = cur.fetchone()
             return User.from_row(row)
 
-    def get_by_id(self, id: int) -> Optional[User]:
+    def get_by_id(self, id: int) -> User | None:
         self.db.rollback()
 
         query = """
@@ -79,7 +78,7 @@ class UserRepository(BaseRepository):
             row = cur.fetchone()
             return User.from_row(row)
 
-    def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[User]]:
+    def get_all(self, filters: dict[str, str] | None = None) -> list[User | None]:
         allowed_keys: set[str] = {f.name for f in fields(User)}
         forbidden_keys: set[str] = {"id"}
 

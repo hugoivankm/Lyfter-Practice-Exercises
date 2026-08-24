@@ -1,8 +1,7 @@
-from flask import Blueprint, jsonify, g, request
 from typing import Any, cast
-from app.services import UserService
-from app.services import UserNotFoundError
 
+from app.services import UserNotFoundError, UserService
+from flask import Blueprint, g, jsonify, request
 
 user_bp = Blueprint("users", __name__)
 

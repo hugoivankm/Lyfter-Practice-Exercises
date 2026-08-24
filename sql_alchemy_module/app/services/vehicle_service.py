@@ -1,14 +1,14 @@
-from typing import Any, Optional
+from typing import Any
+
+from app.models.vehicle import Vehicle
+from app.repositories.vehicle_repository import VehicleRepository
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.repositories.vehicle_repository import VehicleRepository
-from app.models.vehicle import Vehicle
 
 
 class VehicleNotFoundError(Exception):
     "Vehicle not found"
 
-    pass
 
 
 class VehicleService:
@@ -16,7 +16,7 @@ class VehicleService:
         self.vehicles_repo = VehicleRepository(session)
 
     def register_new_vehicle(
-        self, model: str, make: str, year: int, user_id: Optional[int], vin: str
+        self, model: str, make: str, year: int, user_id: int | None, vin: str
     ) -> dict[str, Any]:
 
         new_vehicle = Vehicle(
@@ -55,7 +55,7 @@ class VehicleService:
 
         return vehicle_dict
 
-    def get_all_vehicles(self, filter: Optional[str]) -> list[dict[str, Any]]:
+    def get_all_vehicles(self, filter: str | None) -> list[dict[str, Any]]:
         if filter == "no_user":
             vehicles = self.vehicles_repo.get_by_no_user()
         else:

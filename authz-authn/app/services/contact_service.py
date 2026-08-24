@@ -1,4 +1,5 @@
-from typing import Sequence
+from collections.abc import Sequence
+
 from app.models import Contact
 from app.repositories import ContactRepository
 from sqlalchemy.orm import Session
@@ -49,7 +50,6 @@ class ContactService:
         caller_role: str,
         target_user_id: int | None = None,
     ) -> Sequence[Contact]:
-        self.repository.get_all_user_contacts
         if caller_role == "admin" and target_user_id is not None:
             return self.repository.get_all_user_contacts(target_user_id)
         return self.repository.get_all_user_contacts(caller_id)

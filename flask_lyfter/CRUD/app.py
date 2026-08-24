@@ -1,5 +1,5 @@
-from flask import Flask, request, Response
-from tasks import TasksManager, ResponseManager
+from flask import Flask, Response, request
+from tasks import ResponseManager, TasksManager
 
 app: Flask = Flask(__name__)
 data_manager: TasksManager = TasksManager()

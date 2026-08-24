@@ -1,7 +1,9 @@
 import json
 import os
+from collections.abc import Generator
 from enum import StrEnum, auto
-from typing import Any, Generator
+from typing import Any
+
 from flask import jsonify
 
 

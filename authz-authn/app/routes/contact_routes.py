@@ -1,8 +1,8 @@
-from typing import cast, Any
-from flask import Blueprint, jsonify, g, request
+from typing import Any, cast
 
-from app.services import ContactService
+from app.services import ContactService, UserService
 from app.utils.decorators import login_required
+from flask import Blueprint, g, jsonify, request
 
 contact_bp = Blueprint("contacts", __name__)
 
@@ -33,22 +33,42 @@ def create_contact():
     try:
         name = str(payload["name"]).strip()
         if not name:
-            raise ValueError("Contact name cannot be empty")
+            return jsonify({"error": "Contact name cannot be empty"}), 400
 
         phone_number = str(payload["phone_number"]).strip()
         if not phone_number:
-            raise ValueError("Phone number cannot be empty")
+            return jsonify({"error": "Phone number cannot be empty"}), 400
 
         email = str(payload["email"]).strip()
         if not email:
-            raise ValueError("Email cannot be empty")
+            return jsonify({"error": "Email cannot be empty"}), 400
 
-        target_user_id = payload.get("user_id")
-        if target_user_id is not None:
-            target_user_id = int(target_user_id)
+        target_user_id = g.current_user_id
+
+        query_user_id = request.args.get("user_id")
+        if query_user_id is not None:
+            if g.current_user_role != "admin":
+                return (
+                    jsonify(
+                        {
+                            "error": "Admin privileges required",
+                        }
+                    ),
+                    403,
+                )
+            try:
+                target_user_id = int(query_user_id)
+            except ValueError:
+                return (
+                    jsonify({"error": "Query parameter user_id must be an integer"}),
+                    400,
+                )
+
+        user_service = UserService(g.db_session)
+        if not user_service.get_by_id(target_user_id):
+            return jsonify({"error": f"user with id {target_user_id} not found"}), 404
 
         contact_service = ContactService(g.db_session)
-
         new_contact = contact_service.create_contact(
             caller_id=g.current_user_id,
             caller_role=g.current_user_role,

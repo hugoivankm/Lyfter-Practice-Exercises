@@ -1,10 +1,8 @@
-from typing import Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 # We wont use a config file so we define constants
 POOL_SIZE = 4

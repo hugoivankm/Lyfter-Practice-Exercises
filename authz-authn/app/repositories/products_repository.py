@@ -1,6 +1,6 @@
-from typing import List
+
 from app.models.product import Product
-from sqlalchemy import select, Select
+from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
 
@@ -21,7 +21,7 @@ class ProductRepository:
         stmt = select(Product).where(Product.id == product_id).with_for_update()
         return self.session.scalars(stmt).first()
 
-    def get_products(self) -> List[Product] | None:
+    def get_products(self) -> list[Product] | None:
         stmt: Select[tuple[Product]] = select(Product)
         products = list(self.session.scalars(stmt).all())
         return products if products else None

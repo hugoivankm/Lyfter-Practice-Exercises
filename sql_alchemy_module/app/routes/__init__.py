@@ -1,6 +1,7 @@
 from flask import Blueprint
-from .user_routes import user_bp
+
 from .address_routes import address_bp
+from .user_routes import user_bp
 from .vehicle_routes import vehicle_bp
 
 v1_bp = Blueprint("v1", __name__)
