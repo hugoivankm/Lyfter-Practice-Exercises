@@ -1,7 +1,8 @@
 from typing import Any
 
-from app.repositories import InvoiceRepository
 from sqlalchemy.orm import Session
+
+from app.repositories import InvoiceRepository
 
 
 class InvoiceService:

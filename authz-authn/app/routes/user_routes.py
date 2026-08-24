@@ -1,9 +1,10 @@
 from typing import Any, cast
 
+from flask import Blueprint, Response, current_app, g, jsonify, request
+
 from app.services import LoginEntryService, UserService
 from app.utils.decorators import admin_required, login_required, refresh_token_required
 from app.utils.jwt_utils import JWTManager
-from flask import Blueprint, Response, current_app, g, jsonify, request
 
 user_bp = Blueprint("users", __name__)
 
@@ -82,7 +83,7 @@ def login():
         )
 
     user_service = UserService(g.db_session)
-    tokens = user_service.login(username.strip(), password, jwt)
+    tokens = user_service.login(jwt=jwt, username=username.strip(), password=password)
 
     if not tokens:
         return (
@@ -125,6 +126,7 @@ def refresh():
 
     return jsonify(token_data), 200
 
+
 @user_bp.route("/login-history", methods=["GET"])
 @admin_required
 def get_login_history():
@@ -136,10 +138,12 @@ def get_login_history():
             target_user_id = int(user_id_raw)
         except ValueError:
             return (
-                jsonify({
-                    "error": "Bad Request",
-                    "message": "Query parameter 'user_id' must be an integer.",
-                }),
+                jsonify(
+                    {
+                        "error": "Bad Request",
+                        "message": "Query parameter 'user_id' must be an integer.",
+                    }
+                ),
                 400,
             )
 

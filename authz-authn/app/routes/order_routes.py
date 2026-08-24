@@ -1,8 +1,9 @@
 from typing import Any
 
+from flask import Blueprint, g, jsonify, request
+
 from app.services import PurchaseService
 from app.utils.decorators import login_required
-from flask import Blueprint, g, jsonify, request
 
 order_bp = Blueprint("orders", __name__)
 

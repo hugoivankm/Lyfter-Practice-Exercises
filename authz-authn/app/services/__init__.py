@@ -13,5 +13,5 @@ __all__ = [
     "PaymentService",
     "ProductService",
     "PurchaseService",
-    "UserService"
+    "UserService",
 ]

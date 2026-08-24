@@ -1,11 +1,12 @@
 from typing import Any
 
+from sqlalchemy.orm import Session
+
 from app.models.user import User
 from app.repositories import UserRepository
 from app.services.login_entry_service import LoginEntryService
 from app.utils.jwt_utils import JWTManager
 from app.utils.security_utils import hash_password, verify_password
-from sqlalchemy.orm import Session
 
 
 class UserService:
@@ -46,7 +47,7 @@ class UserService:
             user_id=user.id, is_success=True, ip_address=ip_address
         )
 
-        self._build_token_response(user, jwt)
+        return self._build_token_response(user, jwt)
 
     def get_by_id(self, id: int) -> User | None:
         return self.repo.find_user_by_id(id)
