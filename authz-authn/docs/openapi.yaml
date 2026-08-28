@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Lyfter JWT
-  description: API specification generated from Flask blueprints for User, Product, Invoice, Order, and Contact services.
+  description: RESTful API specification generated from Flask blueprints for User, Product, Invoice, Order, and Contact services.
   version: 1.0.0
 servers:
   - url: http://localhost:5000
@@ -9,9 +9,9 @@ servers:
 
 paths:
   # ==========================================
-  # USER ROUTES (/users)
+  # USER & AUTH ROUTES (/users, /auth)
   # ==========================================
-  /users/register:
+  /users:
     post:
       summary: Register a new user
       description: Creates a new user in the system. Requires admin privileges.
@@ -47,12 +47,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /users/login:
+  /auth/tokens:
     post:
-      summary: Authenticate user
+      summary: Authenticate user (Login)
       description: Logs in a user and returns access and refresh JWT tokens. Logs the attempt in login history.
       tags:
-        - Users
+        - Authentication
       requestBody:
         required: true
         content:
@@ -85,6 +85,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /auth/tokens/refresh:
+    post:
+      summary: Refresh access token
+      description: Issues a new access token using a valid refresh token provided in the Authorization header.
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: New access token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Invalid, missing, or expired refresh token
+
   /users/me:
     get:
       summary: Get current authenticated user details
@@ -101,28 +123,6 @@ paths:
                 $ref: '#/components/schemas/UserProfile'
         '401':
           description: Invalid or expired access token, or user no longer exists
-
-  /users/refresh:
-    post:
-      summary: Refresh access token
-      description: Issues a new access token using a valid refresh token provided in the Authorization header.
-      tags:
-        - Users
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: New access token generated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                    example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
-        '401':
-          description: Invalid, missing, or expired refresh token
 
   /users/login-history:
     get:
@@ -171,7 +171,7 @@ paths:
   # ==========================================
   # CONTACT ROUTES (/contacts)
   # ==========================================
-  /contacts/create:
+  /contacts:
     post:
       summary: Create a new contact
       description: Regular users create contacts for themselves. Admins can optionally specify `user_id` to create a contact for another user.
@@ -205,7 +205,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /contacts/:
     get:
       summary: List contacts
       description: Returns contacts for the authenticated user. Admins can pass `user_id` to inspect contacts belonging to a specific user.
@@ -354,7 +353,7 @@ paths:
   # ==========================================
   # PRODUCT ROUTES (/products)
   # ==========================================
-  /products/create:
+  /products:
     post:
       summary: Register a new product
       description: Requires admin privileges.
@@ -388,7 +387,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /products/:
     get:
       summary: List all products
       description: Requires active user session.
@@ -484,7 +482,7 @@ paths:
   # ==========================================
   # INVOICE ROUTES (/invoices)
   # ==========================================
-  /invoices/buy:
+  /invoices:
     post:
       summary: Create a new invoice
       description: Requires admin privileges.
@@ -518,7 +516,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /invoices/:
     get:
       summary: Retrieve invoices
       description: Retrieve all invoices or filter by user ID using query parameters. Requires admin privileges.
@@ -615,9 +612,9 @@ paths:
   # ==========================================
   # ORDER ROUTES (/orders)
   # ==========================================
-  /orders/process:
+  /orders:
     post:
-      summary: Process a purchase order
+      summary: Create and process a purchase order
       description: Executes purchase validations, inventory deductions, and billing. Requires admin privileges.
       tags:
         - Orders
@@ -926,3 +923,4 @@ components:
           items:
             type: string
           example: ["Product 101 out of stock"]
+          

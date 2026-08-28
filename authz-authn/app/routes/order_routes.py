@@ -7,7 +7,7 @@ from flask import Blueprint, g, jsonify, request
 order_bp = Blueprint("orders", __name__)
 
 
-@order_bp.route("/process", methods=["POST"])
+@order_bp.route("/", methods=["POST"])
 @login_required
 def process():
     try:
@@ -25,15 +25,18 @@ def process():
         result = purchase_service.process(g.current_user_id, items=items)
 
         if result is None:
-            return jsonify(
-                {
-                    "error": "Order failed business validation",
-                    "reasons": ["Product out of stock"],
-                }
-            ), 422
+            return jsonify({"error": "Order failed business validation"}), 422
 
         return jsonify(result), 201
+    except KeyError as e:
+        return jsonify({"error": str(e).strip("'\""), "status_code": 404}), 404
 
+    except ValueError as e:
+        return jsonify({"error": str(e), "status_code": 400}), 400
+
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "status_code": 500}), 500
+    
     except Exception as ex:
         print(ex)
-        return jsonify("Something went wrong"), 500
+        return jsonify({"error": "Something went wrong"}), 500

@@ -8,7 +8,7 @@ from flask import Blueprint, Response, current_app, g, jsonify, request
 user_bp = Blueprint("users", __name__)
 
 
-@user_bp.route("/register", methods=["POST"])
+@user_bp.route("/", methods=["POST"])
 @admin_required
 def register():
     data = cast(dict[str, Any], request.get_json(silent=True) or {})
@@ -21,10 +21,18 @@ def register():
     user_service = UserService(g.db_session)
 
     try:
-        tokens = user_service.register(username, password)
-        return jsonify(tokens), 201
+        _ = user_service.register(username, password, jwt)
+        return jsonify(
+            {{"message": "username {username} successfully registered"}}
+        ), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
+    except Exception as e:
+        return jsonify(
+            {
+                "error": "Something went wrong",
+            }
+        ), 500
 
 
 @user_bp.route("/login", methods=["POST"])
@@ -100,7 +108,6 @@ def login():
 @user_bp.route("/me", methods=["GET"])
 @login_required
 def me():
-    jwt = current_app.extensions["jwt_manager"]
     user_service = UserService(g.db_session)
 
     user = user_service.get_by_id(g.current_user_id)
@@ -114,9 +121,9 @@ def me():
 @user_bp.route("/refresh-token", methods=["POST"])
 @refresh_token_required
 def refresh():
-    jwt_manager = current_app.extensions["jwt_manager"]
+    jwt = current_app.extensions["jwt_manager"]
 
-    token_data = jwt_manager.encode_access_token(
+    token_data = jwt.encode_access_token(
         {
             "sub": g.current_user_id,
             "role": g.current_user_role,

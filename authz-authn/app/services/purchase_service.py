@@ -17,7 +17,7 @@ class PurchaseService:
         card_number: str = "1111-2222-3333-4444",
     ) -> dict[str, Any] | None:
         if not items:
-            return None
+            raise ValueError("order items list cannot be empty")
         total_amount = 0.0
         validated_items: list[dict[str, Any]] = []
 
@@ -26,15 +26,14 @@ class PurchaseService:
             qty = item.get("quantity", 0)
 
             if not product_id or qty <= 0:
-                return None
+                raise ValueError(f"invalid item details: product_id={product_id}, quantity={qty}.")
 
             product = self.product_repo.find_product_by_id_and_update(product_id)
             if not product or product.quantity < qty:
-                return None
+                raise KeyError(f"product with ID '{product_id}' was not found or not sufficient stock.")
 
             unit_price = float(product.price)
             total_amount += unit_price * qty
-
             product.quantity -= qty
 
             validated_items.append(
@@ -47,10 +46,10 @@ class PurchaseService:
 
         payment_success, _ = PaymentService.process_payment(total_amount, card_number)
         if not payment_success:
-            return None
+            raise ValueError(f"Payment failed for total amount ${total_amount:.2f}")
 
         invoice = self.invoice_repo.create_invoice(user_id, validated_items)
         if not invoice:
-            return None
+            return RuntimeError("Failed to generate invoice record in database.")
 
         return invoice.to_dict()

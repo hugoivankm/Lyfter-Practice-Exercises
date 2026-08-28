@@ -3,11 +3,12 @@ from typing import Any, cast
 from app.services import ProductService
 from app.utils.decorators import admin_required, login_required
 from flask import Blueprint, g, jsonify, request
+from werkzeug.exceptions import NotFound
 
 product_bp = Blueprint("products", __name__)
 
 
-@product_bp.route("/create", methods=["POST"])
+@product_bp.route("/", methods=["POST"])
 @admin_required
 def create_product():
     if not request.is_json:
@@ -66,13 +67,13 @@ def list_products():
     try:
         product_service = ProductService(g.db_session)
         products = product_service.get_all()
-        return products
+        return jsonify(products), 200
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
 
 
-@product_bp.route("/<int:int>", methods=["PUT"])
+@product_bp.route("/<id:int>", methods=["PUT"])
 @admin_required
 def update_product(id: int):
     try:
@@ -106,11 +107,11 @@ def update_product(id: int):
             raise ValueError("Quantity cannot be negative")
 
         product_service = ProductService(g.db_session)
-        update_product = product_service.update(id=id, price=price, quantity=quantity)
+        updated_product = product_service.update(id=id, price=price, quantity=quantity)
 
-        if not update_product:
+        if not updated_product:
             raise Exception("Something went wrong, product was not updated")
-        return jsonify(update_product), 200
+        return jsonify(updated_product), 200
 
     except Exception as ex:
         print(ex)
@@ -124,8 +125,10 @@ def delete_product(id: int):
         product_service = ProductService(g.db_session)
         deleted_product = product_service.delete(id)
         if not deleted_product:
-            raise Exception("Unable to delete product")
-        return deleted_product
+            raise NotFound("Unable to delete product")
+        return jsonify(deleted_product), 200
+    except NotFound as nfe:
+        return jsonify({"error": f"{nfe.description}"})
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

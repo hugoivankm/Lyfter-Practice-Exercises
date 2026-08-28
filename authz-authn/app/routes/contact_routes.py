@@ -7,7 +7,7 @@ from flask import Blueprint, g, jsonify, request
 contact_bp = Blueprint("contacts", __name__)
 
 
-@contact_bp.route("/create", methods=["POST"])
+@contact_bp.route("/", methods=["POST"])
 @login_required
 def create_contact():
     if not request.is_json:
@@ -45,7 +45,7 @@ def create_contact():
 
         target_user_id = g.current_user_id
 
-        query_user_id = request.args.get("user_id")
+        query_user_id = request.args.get("user_id", type=int)
         if query_user_id is not None:
             if g.current_user_role != "admin":
                 return (
