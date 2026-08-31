@@ -73,7 +73,6 @@ def list_products():
         return jsonify({"error": "Something went wrong"}), 500
 
 
-@product_bp.route("/<int:int>", methods=["PUT"])
 @product_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
 def update_product(id: int):
@@ -125,7 +124,7 @@ def delete_product(id: int):
     try:
         product_service = ProductService(g.db_session)
         deleted_product = product_service.delete(id)
-        if not delete_product:
+        if not deleted_product:
             raise NotFound("Unable to delete product")
         return jsonify(deleted_product), 200
     except NotFound as nfe:

@@ -21,7 +21,7 @@ class UserService:
 
         hashed = hash_password(password)
         user = self.repo.create_user(username, hashed, role="standard")
-        return self._build_token_response(user)
+        return self._build_token_response(user, jwt)
 
     def login(
         self,

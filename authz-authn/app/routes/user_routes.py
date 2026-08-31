@@ -21,10 +21,8 @@ def register():
     user_service = UserService(g.db_session)
 
     try:
-        tokens = user_service.register(username, password)
-        return jsonify(
-            {"message": "username {username} successfully registered"}
-        ), 201
+        _ = user_service.register(username, password, jwt)
+        return jsonify({"message": f"username {username} successfully registered"}), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
 
@@ -102,7 +100,6 @@ def login():
 @user_bp.route("/me", methods=["GET"])
 @login_required
 def me():
-    jwt = current_app.extensions["jwt_manager"]
     user_service = UserService(g.db_session)
 
     user = user_service.get_by_id(g.current_user_id)
