@@ -3,6 +3,7 @@ from typing import Any, cast
 from app.services import ProductService
 from app.utils.decorators import admin_required, login_required
 from flask import Blueprint, g, jsonify, request
+from werkzeug.exceptions import NotFound
 
 product_bp = Blueprint("products", __name__)
 
@@ -73,6 +74,7 @@ def list_products():
 
 
 @product_bp.route("/<int:int>", methods=["PUT"])
+@product_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
 def update_product(id: int):
     try:
@@ -123,9 +125,11 @@ def delete_product(id: int):
     try:
         product_service = ProductService(g.db_session)
         deleted_product = product_service.delete(id)
-        if not deleted_product:
-            raise Exception("Unable to delete product")
-        return deleted_product
+        if not delete_product:
+            raise NotFound("Unable to delete product")
+        return jsonify(deleted_product), 200
+    except NotFound as nfe:
+        return jsonify({"error": f"{nfe.description}"}), 404
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

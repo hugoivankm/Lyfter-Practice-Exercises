@@ -3,6 +3,7 @@ from typing import Any, cast
 from app.services import ContactService, UserService
 from app.utils.decorators import login_required
 from flask import Blueprint, g, jsonify, request
+from sqlalchemy.exc import IntegrityError
 
 contact_bp = Blueprint("contacts", __name__)
 
@@ -10,27 +11,27 @@ contact_bp = Blueprint("contacts", __name__)
 @contact_bp.route("/create", methods=["POST"])
 @login_required
 def create_contact():
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 400
-
-    raw_data = request.get_json()
-    if not isinstance(raw_data, dict):
-        return jsonify(
-            {"error": "Invalid JSON format, expected a dictionary object"}
-        ), 400
-
-    payload = cast(dict[str, Any], raw_data)
-    required_keys = ["name", "phone_number", "email"]
-
-    missing_params: list[str] = [
-        field for field in required_keys if field not in payload
-    ]
-    if missing_params:
-        return jsonify(
-            {"error": f"Missing fields in contact: {', '.join(missing_params)}"}
-        ), 400
-
     try:
+        if not request.is_json:
+            return jsonify({"error": "Content-Type must be application/json"}), 400
+
+        raw_data = request.get_json()
+        if not isinstance(raw_data, dict):
+            return jsonify(
+                {"error": "Invalid JSON format, expected a dictionary object"}
+            ), 400
+
+        payload = cast(dict[str, Any], raw_data)
+        required_keys = ["name", "phone_number", "email"]
+
+        missing_params: list[str] = [
+            field for field in required_keys if field not in payload
+        ]
+        if missing_params:
+            return jsonify(
+                {"error": f"Missing fields in contact: {', '.join(missing_params)}"}
+            ), 400
+
         name = str(payload["name"]).strip()
         if not name:
             return jsonify({"error": "Contact name cannot be empty"}), 400
@@ -82,6 +83,8 @@ def create_contact():
 
     except (ValueError, TypeError) as err:
         return jsonify({"error": f"Invalid field data: {err}"}), 400
+    except IntegrityError:
+        return jsonify({"error": "Phone number and email must be unique"}), 409
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

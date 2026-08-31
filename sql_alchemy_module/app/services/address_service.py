@@ -12,7 +12,6 @@ class AddressNotFoundError(Exception):
     "Address not found"
 
 
-
 class AddressService:
     def __init__(self, session: Session) -> None:
         self.address_repo = AddressRepository(session)

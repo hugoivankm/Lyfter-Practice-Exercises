@@ -10,7 +10,6 @@ class UserNotFoundError(Exception):
     "User not found"
 
 
-
 class UserService:
     def __init__(self, session: Session) -> None:
         self.users_repo = UserRepository(session)

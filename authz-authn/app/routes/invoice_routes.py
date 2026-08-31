@@ -3,6 +3,7 @@ from typing import Any, cast
 from app.services import InvoiceService
 from app.utils.decorators import admin_required
 from flask import Blueprint, g, jsonify, request
+from werkzeug.exceptions import NotFound
 
 invoice_bp = Blueprint("invoices", __name__)
 
@@ -77,6 +78,8 @@ def get_invoice_by_id(id: int):
         if not retrieved_invoice:
             raise Exception("Unable to retrieve invoices")
         return jsonify(retrieved_invoice), 200
+    except NotFound as nfe:
+        return jsonify({"error": f"{nfe.description}"}), 404
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
@@ -91,6 +94,8 @@ def delete_invoice(id: int):
         if not deleted_invoice:
             raise Exception("Unable to delete invoice")
         return jsonify(deleted_invoice), 200
+    except NotFound as nfe:
+        return jsonify({"error": f"{nfe.description}"}), 404
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

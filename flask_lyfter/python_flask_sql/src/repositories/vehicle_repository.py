@@ -44,9 +44,7 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def update_status(
-        self, vehicle_id: int, status: VehicleStatus
-    ) -> Vehicle | None:
+    def update_status(self, vehicle_id: int, status: VehicleStatus) -> Vehicle | None:
         with self.db.cursor() as cur:
             if status not in VehicleStatus:
                 return None

@@ -13,7 +13,9 @@ class UserService:
         self.repo = UserRepository(session)
         self.loginEntryService = LoginEntryService(session)
 
-    def register(self, username: str, password: str) -> dict[str, Any] | None:
+    def register(
+        self, username: str, password: str, jwt: JWTManager
+    ) -> dict[str, Any] | None:
         if self.repo.find_by_username(username):
             raise ValueError("Username already taken")
 

@@ -34,6 +34,13 @@ def process():
 
         return jsonify(result), 201
 
+
+    except KeyError as e:
+        return jsonify({"error": str(e).strip("'\""), "status_code": 404}), 404
+
+    except ValueError as e:
+        return jsonify({"error": str(e), "status_code": 400}), 400
+
     except Exception as ex:
         print(ex)
         return jsonify("Something went wrong"), 500

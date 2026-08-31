@@ -22,7 +22,9 @@ def register():
 
     try:
         tokens = user_service.register(username, password)
-        return jsonify(tokens), 201
+        return jsonify(
+            {"message": "username {username} successfully registered"}
+        ), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
 

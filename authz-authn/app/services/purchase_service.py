@@ -30,7 +30,15 @@ class PurchaseService:
 
             product = self.product_repo.find_product_by_id_and_update(product_id)
             if not product or product.quantity < qty:
-                return None
+                raise ValueError(
+                    f"invalid item details: product_id={product_id}, quantity={qty}."
+                )
+
+            product = self.product_repo.find_product_by_id_and_update(product_id)
+            if not product or product.quantity < qty:
+                raise KeyError(
+                    f"product with ID '{product_id}' was not found or not sufficient stock."
+                )
 
             unit_price = float(product.price)
             total_amount += unit_price * qty
