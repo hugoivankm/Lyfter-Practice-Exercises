@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 contact_bp = Blueprint("contacts", __name__)
 
 
-@contact_bp.route("/create", methods=["POST"])
+@contact_bp.route("/", methods=["POST"])
 @login_required
 def create_contact():
     try:
@@ -180,6 +180,8 @@ def update_contact(id: int):
 
     except (ValueError, TypeError) as err:
         return jsonify({"error": f"Invalid field data: {err}"}), 400
+    except IntegrityError:
+        return jsonify({"error": "Phone number and email must be unique"}), 409
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

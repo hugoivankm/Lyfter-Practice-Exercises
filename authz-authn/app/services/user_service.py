@@ -11,17 +11,21 @@ from sqlalchemy.orm import Session
 class UserService:
     def __init__(self, session: Session):
         self.repo = UserRepository(session)
-        self.loginEntryService = LoginEntryService(session)
+        self.login_entry_service = LoginEntryService(session)
 
     def register(
-        self, username: str, password: str, jwt: JWTManager
+        self, username: str, password: str
     ) -> dict[str, Any] | None:
         if self.repo.find_by_username(username):
             raise ValueError("Username already taken")
 
         hashed = hash_password(password)
         user = self.repo.create_user(username, hashed, role="standard")
-        return self._build_token_response(user, jwt)
+        return {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role
+        }
 
     def login(
         self,
@@ -33,18 +37,18 @@ class UserService:
         user = self.repo.find_by_username(username)
 
         if user is None:
-            self.loginEntryService.record_entry(
+            self.login_entry_service.record_entry(
                 user_id=None, is_success=False, ip_address=ip_address
             )
             return None
 
         if not verify_password(password, user.password):
-            self.loginEntryService.record_entry(
+            self.login_entry_service.record_entry(
                 user_id=user.id, is_success=False, ip_address=ip_address
             )
             return None
 
-        self.loginEntryService.record_entry(
+        self.login_entry_service.record_entry(
             user_id=user.id, is_success=True, ip_address=ip_address
         )
 

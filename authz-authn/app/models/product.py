@@ -32,7 +32,7 @@ class Product(Base):
         return {
             "id": self.id,
             "name": self.name,
-            "price": self.price,
+            "price": float(self.price),
             "entry_date": self.entry_date,
             "quantity": self.quantity,
         }

@@ -8,7 +8,7 @@ from werkzeug.exceptions import NotFound
 product_bp = Blueprint("products", __name__)
 
 
-@product_bp.route("/create", methods=["POST"])
+@product_bp.route("/", methods=["POST"])
 @admin_required
 def create_product():
     if not request.is_json:
@@ -67,7 +67,7 @@ def list_products():
     try:
         product_service = ProductService(g.db_session)
         products = product_service.get_all()
-        return products
+        return jsonify(products), 200
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
@@ -108,11 +108,15 @@ def update_product(id: int):
 
         product_service = ProductService(g.db_session)
         update_product = product_service.update(id=id, price=price, quantity=quantity)
-
         if not update_product:
-            raise Exception("Something went wrong, product was not updated")
+            raise NotFound()
         return jsonify(update_product), 200
-
+    except NotFound as ex:
+        print(ex)
+        return jsonify({"error": "product not found"}), 404
+    except ValueError as ex:
+        print(ex)
+        return jsonify({"error": "invalid value in request"}), 400
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
