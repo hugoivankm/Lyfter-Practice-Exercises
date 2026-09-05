@@ -1,15 +1,15 @@
 from typing import Any
+
+from app.models.address import Address
+from app.repositories.address_repository import AddressRepository
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.repositories.address_repository import AddressRepository
-from app.models.address import Address
-from .user_service import UserService, UserNotFoundError
+
+from .user_service import UserNotFoundError, UserService
 
 
 class AddressNotFoundError(Exception):
     "Address not found"
-
-    pass
 
 
 class AddressService:
@@ -19,13 +19,13 @@ class AddressService:
     def register_new_address(
         self, physical_address: str, user_id: int
     ) -> dict[str, Any]:
-        
+
         user_service = UserService(self.address_repo.session)
         user = user_service.get_user_by_id(user_id)
 
         if not user:
-            raise  UserNotFoundError(f"Unable to find user with ID {user_id}")
-        
+            raise UserNotFoundError(f"Unable to find user with ID {user_id}")
+
         new_address = Address(physical_address=physical_address, user_id=user_id)
 
         self.address_repo.create(new_address)
@@ -35,7 +35,7 @@ class AddressService:
         return {
             "id": new_address.id,
             "user_id": new_address.user_id,
-            "physical_address": new_address.physical_address
+            "physical_address": new_address.physical_address,
         }
 
     def get_address_by_id(self, id: int):
@@ -45,7 +45,7 @@ class AddressService:
             raise AddressNotFoundError(f"Address with id: {id} not found")
 
         return address.to_dict()
-    
+
     def get_address_with_phrase(self, phrase: str) -> list[dict[str, Any]]:
         addresses = self.address_repo.get_by_address_phrase(phrase)
 
@@ -78,7 +78,9 @@ class AddressService:
         if address is None:
             raise AddressNotFoundError(f"Address with ID {address_id} does not exist.")
 
-        address.physical_address = str(data.get("physical_address", address.physical_address))
+        address.physical_address = str(
+            data.get("physical_address", address.physical_address)
+        )
         address.user_id = int(data.get("user_id", address.user_id))
 
         self.address_repo.save(address)

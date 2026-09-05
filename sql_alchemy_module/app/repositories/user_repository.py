@@ -1,15 +1,14 @@
-from typing import Optional
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
 from app.models import User
 from app.models.vehicle import Vehicle
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 
 class UserRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
+    def get_by_id(self, user_id: int) -> User | None:
         return self.session.get(User, user_id)
 
     def create(self, user: User) -> User:
@@ -26,9 +25,7 @@ class UserRepository:
     def get_by_vehicle_count(self, count: int, or_more: bool = False) -> list[User]:
 
         vehicle_count_subquery = (
-            select(func.count())
-            .where(Vehicle.user_id == User.id)
-            .scalar_subquery()
+            select(func.count()).where(Vehicle.user_id == User.id).scalar_subquery()
         )
 
         if or_more:
@@ -36,4 +33,3 @@ class UserRepository:
         else:
             stmt = select(User).where(vehicle_count_subquery == count)
         return list(self.session.scalars(stmt).all())
-

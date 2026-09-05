@@ -1,4 +1,5 @@
 # uv environment
+.env
 .venv/
 
 # uv build artifacts
@@ -16,6 +17,22 @@ requirements.md
 backup/
 backup_dir/
 
+# Private keys
+*.pem
+*.key
+secrets/
+credentials.json
+.git/
 
 
+# Bruno
+collections/
 
+
+# NodeJS
+node_modules/
+package-lock.json
+package.json
+
+# vscode
+.vscode/

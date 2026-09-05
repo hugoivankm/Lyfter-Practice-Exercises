@@ -1,18 +1,17 @@
-from flask import Blueprint, g, request
 from http import HTTPStatus
 
-from ...services.rental_service import RentalService
+from flask import Blueprint, g, request
 
-from .responses import json_response, error_response
-from ..errors.rental_errors import RentalDoesNotExistsError, RentalCreationError
+from ...services.rental_service import RentalService
 from ..errors.database_errors import DbRetrievalError, InvalidFilterError
 from ..errors.json_errors import (
     EmptyJSONError,
     MalformedJSONError,
     MissingParametersJSONError,
 )
-
-from .utils import validate_json, update_status_and_respond
+from ..errors.rental_errors import RentalCreationError, RentalDoesNotExistsError
+from .responses import error_response, json_response
+from .utils import update_status_and_respond, validate_json
 
 rental_bp = Blueprint("rental_bp", __name__)
 
@@ -108,7 +107,7 @@ def get_rental(rental_id: int):
     service = RentalService(g.db)
     try:
         rental = service.get(rental_id)
-        return json_response(rental, HTTPStatus.OK)  
+        return json_response(rental, HTTPStatus.OK)
     except RentalDoesNotExistsError as e:
         return error_response(str(e), HTTPStatus.NOT_FOUND)
     except DbRetrievalError as e:

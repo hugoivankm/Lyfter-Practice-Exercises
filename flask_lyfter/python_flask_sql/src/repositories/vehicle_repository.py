@@ -1,9 +1,9 @@
-from typing import Optional
 from dataclasses import fields
+
 from psycopg2 import sql
+from psycopg2.extensions import connection as _connection
 from psycopg2.sql import Composable
 
-from psycopg2.extensions import connection as _connection
 from ..models.vehicle import Vehicle, VehicleStatus
 from .repository import BaseRepository
 
@@ -17,8 +17,8 @@ class VehicleRepository(BaseRepository):
         make: str,
         model: str,
         model_year: int,
-        vehicle_status: Optional[VehicleStatus],
-    ) -> Optional[Vehicle]:
+        vehicle_status: VehicleStatus | None,
+    ) -> Vehicle | None:
 
         with self.db.cursor() as cur:
             query = """
@@ -32,7 +32,7 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def delete(self, vehicle_id: int) -> Optional[Vehicle]:
+    def delete(self, vehicle_id: int) -> Vehicle | None:
         with self.db.cursor() as cur:
             query: str = """
             DELETE FROM lyfter_car_rental.vehicles
@@ -44,9 +44,7 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def update_status(
-        self, vehicle_id: int, status: VehicleStatus
-    ) -> Optional[Vehicle]:
+    def update_status(self, vehicle_id: int, status: VehicleStatus) -> Vehicle | None:
         with self.db.cursor() as cur:
             if status not in VehicleStatus:
                 return None
@@ -61,7 +59,7 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def get_by_id(self, vehicle_id: int) -> Optional[Vehicle]:
+    def get_by_id(self, vehicle_id: int) -> Vehicle | None:
         query = """
             SELECT id, make, model, model_year, vehicle_status
             FROM lyfter_car_rental.vehicles 
@@ -72,7 +70,7 @@ class VehicleRepository(BaseRepository):
             row = cur.fetchone()
             return Vehicle.from_row(row)
 
-    def get_all(self, filters: dict[str, str] | None = None) -> list[Optional[Vehicle]]:
+    def get_all(self, filters: dict[str, str] | None = None) -> list[Vehicle | None]:
         all_fields = fields(Vehicle)
         string_keys = {f.name for f in all_fields if f.type is str}
 
@@ -101,7 +99,7 @@ class VehicleRepository(BaseRepository):
                     )
                 else:
                     where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key)))
-                    
+
                 params.append(value)
 
             if where_clauses:

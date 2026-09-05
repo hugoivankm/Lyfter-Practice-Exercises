@@ -1,10 +1,10 @@
 import random
 import string
+
+from app.models import Address, Base, User, Vehicle
 from faker import Faker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
-from app.models import Base, User, Address, Vehicle
 
 DATABASE_URL = "postgresql://postgres:postgres@localhost/postgres?options=-csearch_path=sql_alchemy_module"
 
@@ -22,6 +22,7 @@ CAR_DATA = {
 def generate_random_vin() -> str:
     characters = string.ascii_uppercase + string.digits
     return "".join(random.choices(characters, k=17))
+
 
 def assign_probabilistically[T](value: T) -> T | None:
     return None if random.random() < 0.10 else value
