@@ -76,7 +76,7 @@ def get_invoice_by_id(id: int):
     try:
         invoice_service = InvoiceService(g.db_session)
         current_user_id: int = g.current_user_id
-        is_admin: bool = (g.current_user_role == "admin")
+        is_admin: bool = g.current_user_role == "admin"
 
         retrieved_invoice = invoice_service.get_by_id(
             invoice_id=id,

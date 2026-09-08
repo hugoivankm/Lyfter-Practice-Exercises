@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.repositories import InvoiceRepository
+from app.repositories import InvoiceRepository, ProductRepository
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -8,14 +8,55 @@ from werkzeug.exceptions import Forbidden, NotFound
 class InvoiceService:
     def __init__(self, session: Session) -> None:
         self.repo = InvoiceRepository(session)
+        self.product_repo = ProductRepository(session)
         self.session = session
 
-    def create(
-        self, user_id: int, items: list[dict[str, Any]]
-    ) -> dict[str, Any]:
-        invoice = self.repo.create_invoice(user_id, items)
+    def create(self, user_id: int, items: list[dict[str, Any]]) -> dict[str, Any]:
+        if not isinstance(user_id, int) or isinstance(user_id, bool) or user_id <= 0:
+            raise ValueError("user_id must be a positive integer")
+
+        if not isinstance(items, list) or not items:
+            raise ValueError("items must be a non-empty list")
+
+        validated_items: list[dict[str, Any]] = []
+
+        for item in items:
+            if not isinstance(item, dict):
+                raise TypeError("Each invoice item must be an object")
+
+            product_id = item.get("product_id")
+            quantity = item.get("quantity")
+
+            if (
+                not isinstance(product_id, int)
+                or isinstance(product_id, bool)
+                or product_id <= 0
+            ):
+                raise ValueError("product_id must be a positive integer")
+
+            if (
+                not isinstance(quantity, int)
+                or isinstance(quantity, bool)
+                or quantity <= 0
+            ):
+                raise ValueError("quantity must be a positive integer")
+
+            product = self.product_repo.find_product_by_id(product_id)
+            if not product:
+                raise ValueError(f"Product with ID {product_id} was not found")
+
+            validated_items.append(
+                {
+                    "product_id": product.id,
+                    "quantity": quantity,
+                    "unit_price": float(product.price),
+                }
+            )
+
+        invoice = self.repo.create_invoice(user_id, validated_items)
         if not invoice:
             raise RuntimeError("Failed to create invoice in database.")
+
         return invoice.to_dict()
 
     def get_by_id(
