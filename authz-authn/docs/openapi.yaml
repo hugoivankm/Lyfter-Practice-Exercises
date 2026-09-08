@@ -105,11 +105,17 @@ paths:
   /users/refresh-token:
     post:
       summary: Refresh access token
-      description: Issues a new access token using a valid refresh token provided in the Authorization header.
+      description: Issues a new access token using a valid refresh token provided in the Authorization header or JSON body.
       tags:
         - Users
       security:
         - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
       responses:
         '200':
           description: New access token generated successfully
@@ -121,6 +127,9 @@ paths:
                   access_token:
                     type: string
                     example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: integer
+                    example: 900
         '401':
           description: Invalid, missing, or expired refresh token
 
@@ -518,12 +527,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Invoice'
-        '404':
-          description: Invoices not found for the specified criteria
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal server error
           content:
@@ -586,6 +589,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Invoice'
+        '403':
+          description: Invoice does not belong to the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Resource not found
           content:
@@ -639,7 +648,7 @@ paths:
   /orders/:
     post:
       summary: Process a purchase order
-      description: Executes purchase validations, inventory deductions, and billing. Requires admin privileges.
+      description: Executes purchase validations, inventory deductions, and billing for the authenticated user.
       tags:
         - Orders
       security:
@@ -734,6 +743,15 @@ components:
           enum:
             - admin
             - standard
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
 
     UserProfile:
       type: object
@@ -927,6 +945,8 @@ components:
           type: string
         quantity:
           type: integer
+        unit_price:
+          type: number
           format: float
         line_total:
           type: number
