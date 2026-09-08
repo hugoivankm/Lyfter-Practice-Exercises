@@ -1,12 +1,10 @@
-import psycopg2
 import random
-
 from datetime import date
-from faker import Faker
 from typing import TypedDict
-from typing import Tuple, List
-from psycopg2.extensions import connection
 
+import psycopg2
+from faker import Faker
+from psycopg2.extensions import connection
 
 fake = Faker()
 
@@ -30,9 +28,9 @@ DB_CONFIG: DBConfigOpts = {
 
 def _generate_users_tuple(
     quantity: int = 1,
-) -> List[Tuple[str, str, str, str, date, str]]:
+) -> list[tuple[str, str, str, str, date, str]]:
 
-    user_tuples: List[Tuple[str, str, str, str, date, str]] = []
+    user_tuples: list[tuple[str, str, str, str, date, str]] = []
     for _ in range(quantity):
         user_tuples.append(
             (
@@ -79,7 +77,7 @@ def populate_users_table(conn: connection, quantity: int = 1):
         print(f"Error while populating users table: {e}")
 
 
-def _generate_vehicles_tuple(quantity: int = 1) -> List[Tuple[str, str, int, str]]:
+def _generate_vehicles_tuple(quantity: int = 1) -> list[tuple[str, str, int, str]]:
     VEHICLE_DATA = {
         "Toyota": ["Camry", "Corolla", "RAV4", "Tacoma", "Prius", "Highlander"],
         "Ford": ["F-150", "Mustang", "Explorer", "Escape", "Bronco", "Maverick"],
@@ -93,7 +91,7 @@ def _generate_vehicles_tuple(quantity: int = 1) -> List[Tuple[str, str, int, str
         "Jeep": ["Wrangler", "Grand Cherokee", "Cherokee", "Compass", "Gladiator"],
     }
 
-    vehicle_tuples: List[Tuple[str, str, int, str]] = []
+    vehicle_tuples: list[tuple[str, str, int, str]] = []
     for _ in range(quantity):
         make = random.choices(list(VEHICLE_DATA.keys()))[0]
         model = random.choice(VEHICLE_DATA[make])

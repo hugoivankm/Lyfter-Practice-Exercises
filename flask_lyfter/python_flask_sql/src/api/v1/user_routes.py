@@ -1,25 +1,23 @@
-from flask import Blueprint, g, request
-import psycopg2
 from http import HTTPStatus
 
-from .utils import validate_json, update_status_and_respond
+import psycopg2
+from flask import Blueprint, g, request
 
 from ...services.user_service import (
-    UserService,
-    UserDoesNotExistsError,
-    DbRetrievalError,
     AlreadyExistsError,
+    DbRetrievalError,
     UserCreationError,
+    UserDoesNotExistsError,
+    UserService,
 )
-
 from ..errors.database_errors import InvalidFilterError
-
 from ..errors.json_errors import (
     EmptyJSONError,
     MalformedJSONError,
     MissingParametersJSONError,
 )
-from .responses import json_response, error_response
+from .responses import error_response, json_response
+from .utils import update_status_and_respond, validate_json
 
 user_bp = Blueprint("user_bp", __name__)
 
@@ -64,7 +62,11 @@ def create_user():
             )
         else:
             user_dict = service.register(
-                data["email"], data["username"], data["password"], data["full_name"], data["birthdate"]
+                data["email"],
+                data["username"],
+                data["password"],
+                data["full_name"],
+                data["birthdate"],
             )
 
         return json_response(user_dict, HTTPStatus.CREATED)
