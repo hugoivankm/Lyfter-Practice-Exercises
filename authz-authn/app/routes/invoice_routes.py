@@ -3,7 +3,7 @@ from typing import Any, cast
 from app.services import InvoiceService
 from app.utils.decorators import admin_required, login_required
 from flask import Blueprint, g, jsonify, request
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import HTTPException
 
 invoice_bp = Blueprint("invoices", __name__)
 
@@ -53,34 +53,40 @@ def create_invoice():
 def list_invoices():
     try:
         invoice_service = InvoiceService(g.db_session)
-
-        user_id = g.current_user_id
         target_user_id = request.args.get("user_id", type=int)
-        role = g.current_user_role
 
-        invoices = invoice_service.get_with_role(user_id, role, target_user_id)
+        current_user_id: int = g.current_user_id
+        is_admin: bool = g.current_user_role == "admin"
 
+        invoices = invoice_service.get_all(
+            target_user_id=target_user_id,
+            current_user_id=current_user_id,
+            is_admin=is_admin,
+        )
         return jsonify(invoices), 200
-    except Forbidden as err:
-        return jsonify({"error": err.description}), 403
-    except Exception as ex:
-        print(ex)
+    except HTTPException as http_ex:
+        return jsonify({"error": http_ex.description}), http_ex.code
+    except Exception:
         return jsonify({"error": "Something went wrong"}), 500
 
 
 @invoice_bp.route("/<int:id>", methods=["GET"])
-@admin_required
+@login_required
 def get_invoice_by_id(id: int):
     try:
         invoice_service = InvoiceService(g.db_session)
-        retrieved_invoice = invoice_service.get_by_id(id)
-        if not retrieved_invoice:
-            raise NotFound("invoice not found")
+        current_user_id: int = g.current_user_id
+        is_admin: bool = g.current_user_role == "admin"
+
+        retrieved_invoice = invoice_service.get_by_id(
+            invoice_id=id,
+            current_user_id=current_user_id,
+            is_admin=is_admin,
+        )
         return jsonify(retrieved_invoice), 200
-    except NotFound as nfe:
-        return jsonify({"error": f"{nfe.description}"})
-    except Exception as ex:
-        print(ex)
+    except HTTPException as http_ex:
+        return jsonify({"error": http_ex.description}), http_ex.code
+    except Exception:
         return jsonify({"error": "Something went wrong"}), 500
 
 
@@ -90,11 +96,9 @@ def delete_invoice(id: int):
     try:
         invoice_service = InvoiceService(g.db_session)
         deleted_invoice = invoice_service.delete(id)
-        if not deleted_invoice:
-            raise NotFound("invoice not found")
         return jsonify(deleted_invoice), 200
-    except NotFound as nfe:
-        return jsonify({"error": f"{nfe.description}"})
+    except HTTPException as http_ex:
+        return jsonify({"error": http_ex.description}), http_ex.code
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

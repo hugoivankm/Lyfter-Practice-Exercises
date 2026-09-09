@@ -4,13 +4,11 @@ class RentalCreationError(Exception):
     """
 
 
-
 class FatalRentalCreationError(Exception):
     """
     Raised when database fails to create a
     rental with internal error from database.
     """
-
 
 
 class RentalDoesNotExistsError(Exception):
@@ -19,9 +17,7 @@ class RentalDoesNotExistsError(Exception):
     """
 
 
-
 class RentalUpdateError(Exception):
     """
     Raised when database fails to update a rental.
     """
-

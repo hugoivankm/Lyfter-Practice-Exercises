@@ -4,16 +4,13 @@ class MalformedJSONError(Exception):
     """
 
 
-
 class EmptyJSONError(Exception):
     """
     Raised when parsed json is empty
     """
 
 
-
 class MissingParametersJSONError(Exception):
     """
     Raise when body is missing an expected parameter
     """
-

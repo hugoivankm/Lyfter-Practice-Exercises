@@ -5,4 +5,3 @@ class BaseRepository(ABC):
     """
     Marker abstract base class for repository
     """
-

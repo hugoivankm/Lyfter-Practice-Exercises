@@ -73,7 +73,7 @@ def list_products():
         return jsonify({"error": "Something went wrong"}), 500
 
 
-@product_bp.route("/<id:int>", methods=["PUT"])
+@product_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
 def update_product(id: int):
     try:
@@ -107,12 +107,16 @@ def update_product(id: int):
             raise ValueError("Quantity cannot be negative")
 
         product_service = ProductService(g.db_session)
-        updated_product = product_service.update(id=id, price=price, quantity=quantity)
-
-        if not updated_product:
-            raise Exception("Something went wrong, product was not updated")
-        return jsonify(updated_product), 200
-
+        update_product = product_service.update(id=id, price=price, quantity=quantity)
+        if not update_product:
+            raise NotFound()
+        return jsonify(update_product), 200
+    except NotFound as ex:
+        print(ex)
+        return jsonify({"error": "product not found"}), 404
+    except ValueError as ex:
+        print(ex)
+        return jsonify({"error": "invalid value in request"}), 400
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
@@ -128,7 +132,7 @@ def delete_product(id: int):
             raise NotFound("Unable to delete product")
         return jsonify(deleted_product), 200
     except NotFound as nfe:
-        return jsonify({"error": f"{nfe.description}"})
+        return jsonify({"error": f"{nfe.description}"}), 404
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500

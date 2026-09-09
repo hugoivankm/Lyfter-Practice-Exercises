@@ -10,7 +10,6 @@ class VehicleNotFoundError(Exception):
     "Vehicle not found"
 
 
-
 class VehicleService:
     def __init__(self, session: Session) -> None:
         self.vehicles_repo = VehicleRepository(session)

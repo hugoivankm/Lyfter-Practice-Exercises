@@ -1,4 +1,3 @@
-
 from app.models import Address
 from sqlalchemy import select
 from sqlalchemy.orm import Session

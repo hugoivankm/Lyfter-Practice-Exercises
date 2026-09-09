@@ -1,4 +1,3 @@
-
 from app.models import User
 from app.models.vehicle import Vehicle
 from sqlalchemy import func, select

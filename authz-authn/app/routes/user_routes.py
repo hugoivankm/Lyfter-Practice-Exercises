@@ -17,14 +17,11 @@ def register():
     if not isinstance(username, str) or not isinstance(password, str):
         return jsonify({"error": "Username and password required"}), 400
 
-    jwt = current_app.extensions["jwt_manager"]
     user_service = UserService(g.db_session)
 
     try:
-        _ = user_service.register(username, password, jwt)
-        return jsonify(
-            {{"message": "username {username} successfully registered"}}
-        ), 201
+        created_user = user_service.register(username, password)
+        return jsonify(created_user), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
     except Exception as e:
