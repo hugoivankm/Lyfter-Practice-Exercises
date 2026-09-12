@@ -73,6 +73,21 @@ def list_products():
         return jsonify({"error": "Something went wrong"}), 500
 
 
+@product_bp.route("/<int:id>", methods=["GET"])
+@login_required
+def get_product(id: int):
+    try:
+        product_service = ProductService(g.db_session)
+        product = product_service.get_by_id(id)
+        if not product:
+            return jsonify({"error": "product not found"}), 404
+
+        return jsonify(product), 200
+    except Exception as ex:
+        print(ex)
+        return jsonify({"error": "Something went wrong"}), 500
+
+
 @product_bp.route("/<int:id>", methods=["PUT"])
 @admin_required
 def update_product(id: int):
