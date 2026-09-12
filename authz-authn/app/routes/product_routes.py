@@ -1,9 +1,10 @@
 from typing import Any, cast
 
-from app.services import ProductService
-from app.utils.decorators import admin_required, login_required
 from flask import Blueprint, g, jsonify, request
 from werkzeug.exceptions import NotFound
+
+from app.services import ProductService
+from app.utils.decorators import admin_required, login_required
 
 product_bp = Blueprint("products", __name__)
 

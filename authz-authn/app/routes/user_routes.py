@@ -1,9 +1,10 @@
 from typing import Any, cast
 
+from flask import Blueprint, Response, current_app, g, jsonify, request
+
 from app.services import LoginEntryService, UserService
 from app.utils.decorators import admin_required, login_required, refresh_token_required
 from app.utils.jwt_utils import JWTManager
-from flask import Blueprint, Response, current_app, g, jsonify, request
 
 user_bp = Blueprint("users", __name__)
 
@@ -24,7 +25,7 @@ def register():
         return jsonify(created_user), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
-    except Exception as e:
+    except Exception:
         return jsonify(
             {
                 "error": "Something went wrong",

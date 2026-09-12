@@ -1,9 +1,10 @@
 from typing import Any, cast
 
-from app.services import InvoiceService
-from app.utils.decorators import admin_required, login_required
 from flask import Blueprint, g, jsonify, request
 from werkzeug.exceptions import HTTPException
+
+from app.services import InvoiceService
+from app.utils.decorators import admin_required, login_required
 
 invoice_bp = Blueprint("invoices", __name__)
 
@@ -84,16 +85,9 @@ def get_invoice_by_id(id: int):
             is_admin=is_admin,
         )
         return jsonify(retrieved_invoice), 200
-<<<<<<< Updated upstream
     except HTTPException as http_ex:
         return jsonify({"error": http_ex.description}), http_ex.code
     except Exception:
-=======
-    except NotFound as nfe:
-        return jsonify({"error": f"{nfe.description}"}), 404
-    except Exception as ex:
-        print(ex)
->>>>>>> Stashed changes
         return jsonify({"error": "Something went wrong"}), 500
 
 
@@ -104,13 +98,8 @@ def delete_invoice(id: int):
         invoice_service = InvoiceService(g.db_session)
         deleted_invoice = invoice_service.delete(id)
         return jsonify(deleted_invoice), 200
-<<<<<<< Updated upstream
     except HTTPException as http_ex:
         return jsonify({"error": http_ex.description}), http_ex.code
-=======
-    except NotFound as nfe:
-        return jsonify({"error": f"{nfe.description}"}), 404
->>>>>>> Stashed changes
     except Exception as ex:
         print(ex)
         return jsonify({"error": "Something went wrong"}), 500
