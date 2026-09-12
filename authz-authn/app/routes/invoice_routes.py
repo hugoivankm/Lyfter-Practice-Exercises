@@ -1,10 +1,9 @@
 from typing import Any, cast
 
-from flask import Blueprint, g, jsonify, request
-from werkzeug.exceptions import HTTPException
-
 from app.services import InvoiceService
 from app.utils.decorators import admin_required, login_required
+from flask import Blueprint, g, jsonify, request
+from werkzeug.exceptions import HTTPException
 
 invoice_bp = Blueprint("invoices", __name__)
 

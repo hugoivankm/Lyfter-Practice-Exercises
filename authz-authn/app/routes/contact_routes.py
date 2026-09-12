@@ -1,10 +1,9 @@
 from typing import Any, cast
 
-from flask import Blueprint, g, jsonify, request
-from sqlalchemy.exc import IntegrityError
-
 from app.services import ContactService, UserService
 from app.utils.decorators import login_required
+from flask import Blueprint, g, jsonify, request
+from sqlalchemy.exc import IntegrityError
 
 contact_bp = Blueprint("contacts", __name__)
 
