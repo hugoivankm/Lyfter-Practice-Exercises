@@ -2,7 +2,7 @@ from typing import Any
 
 from app.repositories import InvoiceRepository, ProductRepository
 from sqlalchemy.orm import Session
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import Forbidden
 
 
 class InvoiceService:

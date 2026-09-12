@@ -26,6 +26,7 @@ class PurchaseService:
                 if not isinstance(item, dict):
                     raise TypeError(f"item is not a dict {type(item).__name__}")
 
+<<<<<<< Updated upstream
                 raw_id = item.get("product_id")
                 raw_qty = item.get("quantity")
 
@@ -47,6 +48,17 @@ class PurchaseService:
             if not product or product.quantity < qty:
                 raise ValueError(
                     f"invalid item details: product_id={product_id}, quantity={qty}."
+=======
+            if not product_id or qty <= 0:
+                raise ValueError(
+                    f"invalid item details: product_id={product_id}, quantity={qty}."
+                )
+
+            product = self.product_repo.find_product_by_id_and_update(product_id)
+            if not product or product.quantity < qty:
+                raise KeyError(
+                    f"product with ID '{product_id}' was not found or not sufficient stock."
+>>>>>>> Stashed changes
                 )
 
             unit_price = float(product.price)

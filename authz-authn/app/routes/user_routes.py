@@ -20,8 +20,10 @@ def register():
     user_service = UserService(g.db_session)
 
     try:
-        created_user = user_service.register(username, password)
-        return jsonify(created_user), 201
+        _ = user_service.register(username, password, jwt)
+        return jsonify(
+            {"message": "username {username} successfully registered"}
+        ), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
     except Exception as e:
