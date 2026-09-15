@@ -24,7 +24,8 @@ def register():
         return jsonify(created_user), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
-    except Exception:
+    except Exception as ex:
+        print(ex)
         return jsonify(
             {
                 "error": "Something went wrong",

@@ -5,13 +5,13 @@ from app.utils.cache import CacheManager
 from flask import jsonify
 
 
-def cache_response(key_prefix: str, timeout: int = 300, id: int | None = None):
+def cache_response(key_prefix: str, timeout: int = 300):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             cache_manager = CacheManager()
             # 1. Build un unique cache key
-            cache_id = kwargs.get("id", id)
+            cache_id = kwargs.get("id")
             key: str = f"{key_prefix}:{str(cache_id) if cache_id is not None else 'all'}"
 
             # 2. Try fetching from Redis

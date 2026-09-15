@@ -11,7 +11,7 @@ paths:
   # ==========================================
   # USER & AUTH ROUTES (/users, /auth)
   # ==========================================
-  /users:
+  /users/:
     post:
       summary: Register a new user
       description: Creates a new user in the system. Requires admin privileges.
@@ -47,7 +47,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /auth/tokens:
+  /users/login:
     post:
       summary: Authenticate user (Login)
       description: Logs in a user and returns access and refresh JWT tokens. Logs the attempt in login history.
@@ -84,28 +84,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /auth/tokens/refresh:
-    post:
-      summary: Refresh access token
-      description: Issues a new access token using a valid refresh token provided in the Authorization header.
-      tags:
-        - Authentication
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: New access token generated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                    example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
-        '401':
-          description: Invalid, missing, or expired refresh token
 
   /users/me:
     get:
@@ -1013,7 +991,4 @@ components:
           items:
             type: string
           example: ["Product 101 out of stock"]
-<<<<<<< HEAD
           
-=======
->>>>>>> authz
