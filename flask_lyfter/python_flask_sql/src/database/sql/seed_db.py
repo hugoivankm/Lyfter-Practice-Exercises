@@ -1,6 +1,8 @@
 import os
+
 import psycopg2
-from psycopg2.extensions import connection as _connection, cursor as _cursor
+from psycopg2.extensions import connection as _connection
+from psycopg2.extensions import cursor as _cursor
 
 
 def execute_sql_file(cur: _cursor, file_path: str) -> bool:

@@ -1,12 +1,11 @@
-from flask import Flask, g, Response
 from http import HTTPStatus
-from psycopg2.extensions import connection as _connection
+
+from flask import Flask, Response, g
 from psycopg2.extensions import TRANSACTION_STATUS_IDLE
-from typing import Optional
+from psycopg2.extensions import connection as _connection
 
 from ...api.v1.responses import error_response
 from ...database.database_manager import DbManager
-
 from . import v1_bp
 
 app = Flask(__name__)
@@ -26,7 +25,7 @@ def before_request():
 
 @app.after_request
 def after_request(response: Response):
-    db_conn: Optional[_connection] = getattr(g, "db", None)
+    db_conn: _connection | None = getattr(g, "db", None)
 
     if db_conn is not None and 200 <= response.status_code < 300:
         try:
@@ -42,8 +41,8 @@ def after_request(response: Response):
 
 
 @app.teardown_request
-def teardown_request(exception: Optional[BaseException] = None) -> None:
-    db_conn: Optional[_connection] = getattr(g, "db", None)
+def teardown_request(exception: BaseException | None = None) -> None:
+    db_conn: _connection | None = getattr(g, "db", None)
 
     if db_conn is not None:
         try:

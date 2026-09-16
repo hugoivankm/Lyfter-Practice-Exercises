@@ -1,6 +1,6 @@
+from dataclasses import asdict, dataclass
 from enum import StrEnum
-from dataclasses import dataclass, asdict
-from typing import Tuple, Any, Optional
+from typing import Any, Optional
 
 
 class VehicleStatus(StrEnum):
@@ -20,7 +20,7 @@ class Vehicle:
     vehicle_status: VehicleStatus
 
     @classmethod
-    def from_row(cls, row: Tuple[Any, ...] | None) -> Optional["Vehicle"]:
+    def from_row(cls, row: tuple[Any, ...] | None) -> Optional["Vehicle"]:
         if not row:
             return None
         return cls(

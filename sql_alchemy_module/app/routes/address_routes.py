@@ -1,8 +1,11 @@
-from flask import Blueprint, jsonify, g, request
 from typing import Any, cast
-from app.services.address_service import AddressService, AddressNotFoundError
-from app.services.address_service import UserNotFoundError
 
+from app.services.address_service import (
+    AddressNotFoundError,
+    AddressService,
+    UserNotFoundError,
+)
+from flask import Blueprint, g, jsonify, request
 
 address_bp = Blueprint("address", __name__)
 

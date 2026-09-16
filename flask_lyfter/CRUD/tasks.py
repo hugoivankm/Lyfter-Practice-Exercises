@@ -1,7 +1,9 @@
 import json
 import os
+from collections.abc import Generator
 from enum import StrEnum, auto
-from typing import Any, Generator
+from typing import Any
+
 from flask import jsonify
 
 
@@ -160,23 +162,21 @@ class TasksManager:
         self.commit()
         return candidate
 
-    def filter_by_status(
-        self, status_filter: str | None = None
-    ) -> list[Task] | None:
-        
+    def filter_by_status(self, status_filter: str | None = None) -> list[Task] | None:
+
         if not status_filter:
             return list(self.tasks.values())
-        
+
         try:
             target_status = Status(status_filter.lower())
             return [t for t in self.tasks.values() if t.status == target_status]
-        
+
         except ValueError:
             return None
 
     def error_response(message, status_code):
         return jsonify({"error": message}), status_code
-    
+
 
 class ResponseManager:
     @staticmethod
@@ -188,4 +188,3 @@ class ResponseManager:
         if isinstance(data, list):
             return jsonify([t.to_dict() for t in data]), status_code
         return jsonify(data.to_dict()), status_code
-    

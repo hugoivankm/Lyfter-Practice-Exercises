@@ -1,10 +1,11 @@
 import os
 from datetime import datetime
+from typing import TypedDict
+
 import psycopg2
-from psycopg2 import sql 
+from psycopg2 import sql
 from psycopg2.extensions import connection
 
-from typing import TypedDict
 
 class DBConfigOpts(TypedDict):
     dbname: str
@@ -17,15 +18,16 @@ class DBConfigOpts(TypedDict):
 def export_table_to_csv(conn: connection, table_name: str, output_dir: str):
     current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     csv_file_path = os.path.join(output_dir, f"{table_name}_{current_time}.csv")
-    schema: str = "lyfter_car_rental" 
+    schema: str = "lyfter_car_rental"
 
-    query = sql.SQL("COPY {} TO STDOUT WITH CSV HEADER").format(sql.Identifier(schema, table_name))
+    query = sql.SQL("COPY {} TO STDOUT WITH CSV HEADER").format(
+        sql.Identifier(schema, table_name)
+    )
 
-    with open(csv_file_path, 'w', encoding='utf-8') as f:
-        with conn.cursor() as cur:
-            query_string = query.as_string(conn)
-            cur.copy_expert(query_string, f)
-            
+    with open(csv_file_path, "w", encoding="utf-8") as f, conn.cursor() as cur:
+        query_string = query.as_string(conn)
+        cur.copy_expert(query_string, f)
+
 
 def get_tables_names(conn: connection) -> list[str]:
     """Queries the database and returns a list of all table names for lyfter_car_rental schema."""
@@ -45,15 +47,16 @@ def get_tables_names(conn: connection) -> list[str]:
     except Exception:
         raise
 
+
 def main():
     DB_CONFIG: DBConfigOpts = {
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": "postgres",
-    "host": "localhost",
-    "port": "5432",
-}
-            
+        "dbname": "postgres",
+        "user": "postgres",
+        "password": "postgres",
+        "host": "localhost",
+        "port": "5432",
+    }
+
     BACKUP_DIR = "./backup_dir"
     os.makedirs(BACKUP_DIR, exist_ok=True)
 
@@ -64,12 +67,11 @@ def main():
 
             for table in table_list:
                 export_table_to_csv(conn, table, BACKUP_DIR)
-                
-            print(f"{ ', '.join(table_list)} successfully backup at {BACKUP_DIR}")
+
+            print(f"{', '.join(table_list)} successfully backup at {BACKUP_DIR}")
     except Exception as e:
         print(e)
 
-   
+
 if __name__ == "__main__":
     main()
-

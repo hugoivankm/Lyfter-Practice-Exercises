@@ -1,22 +1,18 @@
-import psycopg2
 from http import HTTPStatus
+
+import psycopg2
 from flask import Blueprint, g, request
 
-from .utils import validate_json, update_status_and_respond
-
 from ...services.vehicle_service import VehicleService
-
+from ..errors.database_errors import DbRetrievalError, InvalidFilterError
 from ..errors.json_errors import (
-    MalformedJSONError,
     EmptyJSONError,
+    MalformedJSONError,
     MissingParametersJSONError,
 )
-
 from ..errors.vehicle_errors import VehicleDoesNotExistsError
-
-from ..errors.database_errors import DbRetrievalError, InvalidFilterError
-
-from .responses import json_response, error_response
+from .responses import error_response, json_response
+from .utils import update_status_and_respond, validate_json
 
 vehicle_bp = Blueprint("vehicle_bp", __name__)
 

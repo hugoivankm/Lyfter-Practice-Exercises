@@ -1,26 +1,28 @@
-
-
-from typing import Any, Optional
+from typing import Any
 
 import psycopg2
 from psycopg2.extensions import connection as _connection
 
-from .service import BaseService
-from ..repositories.vehicle_repository import Vehicle, VehicleRepository, VehicleStatus
+from ..api.errors.database_errors import (
+    DbRetrievalError,
+    InvalidFilterError,
+    InvalidStatusError,
+)
 from ..api.errors.vehicle_errors import (
     VehicleCreationError,
     VehicleDeletionError,
     VehicleDoesNotExistsError,
     VehicleUpdateError,
 )
-from ..api.errors.database_errors import DbRetrievalError, InvalidStatusError, InvalidFilterError
+from ..repositories.vehicle_repository import Vehicle, VehicleRepository, VehicleStatus
+from .service import BaseService
 
 
 class VehicleService(BaseService):
     """Service layer for handling core domain logic and workflows for Vehicles.
 
-    Acts as an intermediary layer between the API endpoints and the underlying 
-    VehicleRepository, managing business rules, validations, and mapping data models 
+    Acts as an intermediary layer between the API endpoints and the underlying
+    VehicleRepository, managing business rules, validations, and mapping data models
     to primitive dictionary structures.
 
     Attributes:
@@ -40,7 +42,7 @@ class VehicleService(BaseService):
         make: str,
         model: str,
         model_year: int,
-        vehicle_status: Optional[VehicleStatus],
+        vehicle_status: VehicleStatus | None,
     ) -> dict[str, Any]:
         """Registers a brand new vehicle within the inventory system.
 
@@ -56,7 +58,7 @@ class VehicleService(BaseService):
             dict[str, Any]: A dictionary representation of the newly created Vehicle entity.
 
         Raises:
-            VehicleCreationError: If the repository fails to generate and return the 
+            VehicleCreationError: If the repository fails to generate and return the
                 newly registered vehicle entity from the database pipeline.
         """
         if vehicle_status is None:
@@ -82,7 +84,7 @@ class VehicleService(BaseService):
 
         Raises:
             VehicleDoesNotExistsError: If no vehicle record matches the provided identifier.
-            DbRetrievalError: On any unforeseen operational or network failures occurring 
+            DbRetrievalError: On any unforeseen operational or network failures occurring
                 within the database infrastructure layer.
         """
         try:
@@ -100,11 +102,11 @@ class VehicleService(BaseService):
         """Queries and fetches collections of vehicle records applying dynamic field criteria filters.
 
         Args:
-            status (dict[str, str] | None): Dictionary mapping filter attributes 
+            status (dict[str, str] | None): Dictionary mapping filter attributes
                 (like column keys and query text values) extracted from requested parameters.
 
         Returns:
-            list[dict[str, Any]]: A list containing dictionary instances representing every 
+            list[dict[str, Any]]: A list containing dictionary instances representing every
                 matching vehicle found in the active scope. Returns an empty list if no matches exist.
 
         Raises:
@@ -136,13 +138,13 @@ class VehicleService(BaseService):
             id (int): The unique integer ID of the targeted vehicle record to be dropped.
 
         Returns:
-            dict[str, Any]: A structural tracking dictionary holding metadata properties 
+            dict[str, Any]: A structural tracking dictionary holding metadata properties
                 of the safely removed vehicle item.
 
         Raises:
-            VehicleDoesNotExistsError: If a lookup operation returns empty because the target 
+            VehicleDoesNotExistsError: If a lookup operation returns empty because the target
                 identifier row doesn't exist.
-            VehicleDeletionError: If operational constraints fail (such as foreign key blocks 
+            VehicleDeletionError: If operational constraints fail (such as foreign key blocks
                 triggered by active customer rental associations on this vehicle profile).
             DbRetrievalError: On unexpected hardware/connection drops occurring inside the system core.
         """
@@ -170,17 +172,17 @@ class VehicleService(BaseService):
 
         Args:
             id (int): The unique database reference tracking identifier for the vehicle.
-            new_status (VehicleStatus): The target programmatic enumeration variable 
+            new_status (VehicleStatus): The target programmatic enumeration variable
                 (e.g., VehicleStatus.RESERVED, VehicleStatus.AVAILABLE) to assign.
 
         Returns:
             dict[str, Any]: A serialized dictionary reflecting the updated vehicle data model attributes.
 
         Raises:
-            InvalidStatusError: If parsed text elements fail internal verification checks 
+            InvalidStatusError: If parsed text elements fail internal verification checks
                 mapping to a legitimate core enum item.
             VehicleDoesNotExistsError: If a verification query returns empty for the targeted row.
-            VehicleUpdateError: If execution state records return a missing assignment indicator 
+            VehicleUpdateError: If execution state records return a missing assignment indicator
                 following statement processing attempts.
         """
         try:

@@ -4,23 +4,23 @@ from typing import Any
 import psycopg2
 from psycopg2.extensions import connection as _connection
 
-from .service import BaseService
-from ..repositories.user_repository import UserRepository
-from ..models.user import User, AccountStatus
+from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
 from ..api.errors.user_errors import (
+    AlreadyExistsError,
     UserCreationError,
     UserDeletionError,
     UserDoesNotExistsError,
     UserUpdateError,
-    AlreadyExistsError,
 )
-from ..api.errors.database_errors import DbRetrievalError, InvalidFilterError
+from ..models.user import AccountStatus, User
+from ..repositories.user_repository import UserRepository
+from .service import BaseService
 
 
 class UserService(BaseService):
     """Service layer for handling core domain logic and workflows for Users.
 
-    Acts as the orchestrator for user administration, authentication support structures, 
+    Acts as the orchestrator for user administration, authentication support structures,
     account creation constraints, status transitions, and data extraction pipelines.
 
     Attributes:
@@ -58,7 +58,7 @@ class UserService(BaseService):
 
         Raises:
             AlreadyExistsError: If the specified email or username values violate database unique constraints.
-            UserCreationError: If data values violate explicit relational table check conditions 
+            UserCreationError: If data values violate explicit relational table check conditions
                 or if the internal repository pipeline execution returns a null profile state.
         """
         try:
@@ -85,7 +85,7 @@ class UserService(BaseService):
 
         Raises:
             UserDoesNotExistsError: If no data record row matches the provided identifier.
-            DbRetrievalError: If underlying low-level database socket connection faults occur 
+            DbRetrievalError: If underlying low-level database socket connection faults occur
                 during operational query transmission.
         """
         try:
@@ -98,22 +98,22 @@ class UserService(BaseService):
         except psycopg2.Error as e:
             print(f"get user error: {e}")
             raise DbRetrievalError("unable to retrieve user")
-        
+
     def get_all(self, status: dict[str, str] | None) -> list[dict[str, Any]]:
         """Queries and returns matching arrays of user profiles leveraging arbitrary structural filter properties.
 
         Args:
-            status (dict[str, str] | None): Dictionary key-value attributes matching columns 
+            status (dict[str, str] | None): Dictionary key-value attributes matching columns
                 and runtime string values used to structure WHERE blocks dynamically.
 
         Returns:
-            list[dict[str, Any]]: A list of plain dictionary structures representing every 
+            list[dict[str, Any]]: A list of plain dictionary structures representing every
                 matching user profile matching the target parameters.
 
         Raises:
             UserDoesNotExistsError: If execution outputs match zero items or collection length indicates zero items.
             InvalidFilterError: If input key maps fail metadata dataclass reflection validation logic.
-            DbRetrievalError: On internal engine errors or driver operational faults encountered 
+            DbRetrievalError: On internal engine errors or driver operational faults encountered
                 during loop parsing.
         """
         try:
@@ -126,7 +126,7 @@ class UserService(BaseService):
                 assert isinstance(user, User)
                 results.append(user.to_dict())
             return results
-        
+
         except ValueError:
             raise InvalidFilterError("invalid filter")
         except psycopg2.Error:
@@ -139,12 +139,12 @@ class UserService(BaseService):
             id (int): The unique integer database ID tracking the profile to purge.
 
         Returns:
-            dict[str, Any]: A historical dictionary object containing properties of the 
+            dict[str, Any]: A historical dictionary object containing properties of the
                 purged target record for confirmation logs.
 
         Raises:
             UserDoesNotExistsError: If a verification check finds no target user matching the key.
-            UserDeletionError: If relational parent-child barriers block removal due to existing active 
+            UserDeletionError: If relational parent-child barriers block removal due to existing active
                 dependencies (e.g., historical user accounts with linked active rental records).
             DbRetrievalError: On systemic transactional connection failures or driver errors.
         """
@@ -175,16 +175,16 @@ class UserService(BaseService):
 
         Args:
             id (int): The unique database reference tracking identifier for the user profile.
-            new_status (AccountStatus): The target status enum value (e.g., AccountStatus.SUSPENDED, 
+            new_status (AccountStatus): The target status enum value (e.g., AccountStatus.SUSPENDED,
                 AccountStatus.ACTIVE) to transition into.
 
         Returns:
             dict[str, Any]: A serialized dictionary reflecting the modified profile status schema.
 
         Raises:
-            UserUpdateError: If input status properties cannot resolve to a valid system enum 
+            UserUpdateError: If input status properties cannot resolve to a valid system enum
                 or if statements post-processing returns empty result structures.
-            UserDoesNotExistsError: If a validation lookup query shows the target profile ID row 
+            UserDoesNotExistsError: If a validation lookup query shows the target profile ID row
                 does not exist.
         """
         try:
