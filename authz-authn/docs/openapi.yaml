@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Lyfter JWT
-  description: API specification generated from Flask blueprints for User, Product, Invoice, Order, and Contact services.
+  description: RESTful API specification generated from Flask blueprints for User, Product, Invoice, Order, and Contact services.
   version: 1.0.0
 servers:
   - url: http://localhost:5000
@@ -9,9 +9,9 @@ servers:
 
 paths:
   # ==========================================
-  # USER ROUTES (/users)
+  # USER & AUTH ROUTES (/users, /auth)
   # ==========================================
-  /users/register:
+  /users/:
     post:
       summary: Register a new user
       description: Creates a new user in the system. Requires admin privileges.
@@ -49,10 +49,10 @@ paths:
 
   /users/login:
     post:
-      summary: Authenticate user
+      summary: Authenticate user (Login)
       description: Logs in a user and returns access and refresh JWT tokens. Logs the attempt in login history.
       tags:
-        - Users
+        - Authentication
       requestBody:
         required: true
         content:
@@ -991,3 +991,4 @@ components:
           items:
             type: string
           example: ["Product 101 out of stock"]
+          

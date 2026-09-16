@@ -47,4 +47,4 @@ def process():
     except Exception as ex:
         g.db_session.rollback()
         print(ex)
-        return jsonify("Something went wrong"), 500
+        return jsonify({"error": "Something went wrong"}), 500
