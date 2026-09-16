@@ -6,6 +6,53 @@
 
 ```text
 Lyfter-Practice-Exercises
+├── authz-authn
+│   ├── app
+│   │   ├── database
+│   │   │   └── db_manager.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── contacts.py
+│   │   │   ├── invoice.py
+│   │   │   ├── invoice_detail.py
+│   │   │   ├── login_entry.py
+│   │   │   ├── model.py
+│   │   │   ├── product.py
+│   │   │   └── user.py
+│   │   ├── repositories
+│   │   │   ├── __init__.py
+│   │   │   ├── contact_repository.py
+│   │   │   ├── invoice_repository.py
+│   │   │   ├── login_entry_repository.py
+│   │   │   ├── products_repository.py
+│   │   │   └── user_repository.py
+│   │   ├── routes
+│   │   │   ├── __init__.py
+│   │   │   ├── contact_routes.py
+│   │   │   ├── invoice_routes.py
+│   │   │   ├── order_routes.py
+│   │   │   ├── product_routes.py
+│   │   │   └── user_routes.py
+│   │   ├── services
+│   │   │   ├── __init__.py
+│   │   │   ├── contact_service.py
+│   │   │   ├── invoice_service.py
+│   │   │   ├── login_entry_service.py
+│   │   │   ├── payment_service.py
+│   │   │   ├── product_service.py
+│   │   │   ├── purchase_service.py
+│   │   │   └── user_service.py
+│   │   ├── utils
+│   │   │   ├── decorators
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── auth.py
+│   │   │   ├── cache.py
+│   │   │   ├── jwt_utils.py
+│   │   │   └── security_utils.py
+│   │   └── app.py
+│   ├── docs
+│   │   └── openapi.yaml
+│   └── run.py
 ├── databases
 │   ├── nomalization
 │   │   ├── 1_1-Normal-Forms.md
