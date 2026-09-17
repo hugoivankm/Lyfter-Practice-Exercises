@@ -46,7 +46,7 @@ def create_contact():
 
         target_user_id = g.current_user_id
 
-        query_user_id = request.args.get("user_id")
+        query_user_id = request.args.get("user_id", type=int)
         if query_user_id is not None:
             if g.current_user_role != "admin":
                 return (
