@@ -1,11 +1,16 @@
 import json
+import os
 from functools import wraps
 
 from app.utils.cache import CacheManager
+from dotenv import load_dotenv
 from flask import jsonify
 
+load_dotenv()
 
-def cache_response(key_prefix: str, timeout: int = 300):
+DEFAULT_CACHE_TTL = os.getenv("REDIS_CACHE_DEFAULT_TTL")
+
+def cache_response(key_prefix: str, timeout: int = DEFAULT_CACHE_TTL):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
