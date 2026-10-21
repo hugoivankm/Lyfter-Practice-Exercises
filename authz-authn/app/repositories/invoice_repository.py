@@ -1,9 +1,10 @@
 from typing import Any
 
-from app.models.invoice import Invoice
-from app.models.invoice_detail import InvoiceDetail
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
+
+from app.models.invoice import Invoice
+from app.models.invoice_detail import InvoiceDetail
 
 
 class InvoiceRepository:

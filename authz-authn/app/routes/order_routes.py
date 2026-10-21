@@ -1,6 +1,7 @@
 from typing import Any
 
 from app.services import PurchaseService
+from app.utils.cache import CacheManager
 from app.utils.decorators import login_required
 from flask import Blueprint, g, jsonify, request
 
@@ -34,6 +35,20 @@ def process():
                 }
             ), 422
 
+        cache = CacheManager()
+
+        product_ids = { 
+            item["product_id"]
+            for item in items
+            if isinstance(item, dict)
+            and isinstance(item.get("product_id"), int)
+        }
+
+        for product_id in product_ids:
+            cache.delete_data(f"product:{product_id}")
+
+        cache.delete_data("products:all")
+
         return jsonify(result), 201
     except TypeError as ex:
         g.db_session.rollback()
@@ -47,4 +62,4 @@ def process():
     except Exception as ex:
         g.db_session.rollback()
         print(ex)
-        return jsonify("Something went wrong"), 500
+        return jsonify({"error": "Something went wrong"}), 500

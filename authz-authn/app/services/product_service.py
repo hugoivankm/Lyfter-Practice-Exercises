@@ -1,7 +1,8 @@
 from typing import Any
 
-from app.repositories import ProductRepository
 from sqlalchemy.orm import Session
+
+from app.repositories import ProductRepository
 
 
 class ProductService:

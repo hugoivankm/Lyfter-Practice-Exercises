@@ -1,7 +1,8 @@
 from typing import Any, cast
 
 from app.services import ProductService
-from app.utils.decorators import admin_required, login_required
+from app.utils.cache import CacheManager
+from app.utils.decorators import admin_required, cache_response, login_required
 from flask import Blueprint, g, jsonify, request
 from werkzeug.exceptions import NotFound
 
@@ -52,6 +53,8 @@ def create_product():
             quantity=quantity,
         )
 
+        CacheManager().delete_data("products:all")
+
         return jsonify(new_product), 201
 
     except (ValueError, TypeError) as err:
@@ -63,6 +66,7 @@ def create_product():
 
 @product_bp.route("/", methods=["GET"])
 @login_required
+@cache_response("products")
 def list_products():
     try:
         product_service = ProductService(g.db_session)
@@ -75,6 +79,7 @@ def list_products():
 
 @product_bp.route("/<int:id>", methods=["GET"])
 @login_required
+@cache_response("product")
 def get_product(id: int):
     try:
         product_service = ProductService(g.db_session)
@@ -123,8 +128,14 @@ def update_product(id: int):
 
         product_service = ProductService(g.db_session)
         update_product = product_service.update(id=id, price=price, quantity=quantity)
+
         if not update_product:
-            raise NotFound()
+            raise NotFound("Product not found")
+
+        cache = CacheManager()
+        cache.delete_data(f"product:{id}")
+        cache.delete_data("products:all")
+
         return jsonify(update_product), 200
     except NotFound as ex:
         print(ex)
@@ -145,6 +156,11 @@ def delete_product(id: int):
         deleted_product = product_service.delete(id)
         if not deleted_product:
             raise NotFound("Unable to delete product")
+        
+        cache = CacheManager()
+        cache.delete_data(f"product:{id}")
+        cache.delete_data("products:all")
+
         return jsonify(deleted_product), 200
     except NotFound as nfe:
         return jsonify({"error": f"{nfe.description}"}), 404
